@@ -14,6 +14,16 @@ export const createGitSyncSchema = (t: (key: string) => string) => z.object({
     delay: z.number().min(0, t("ui.validation.git.delayMin")),
     retentionDays: z.number().min(-1, t("ui.validation.git.retentionDaysMin")).default(0),
     isEnabled: z.boolean().default(true),
+    includeConfig: z.boolean().default(false),
+    configSyncRules: z.array(z.string()).default([]),
+}).superRefine((data, ctx) => {
+    if (data.includeConfig && data.configSyncRules.filter(r => r.trim() !== "").length === 0) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: t("ui.validation.git.configSyncRulesRequired"),
+            path: ["configSyncRules"],
+        });
+    }
 });
 
 export type GitSyncFormData = z.infer<ReturnType<typeof createGitSyncSchema>>;

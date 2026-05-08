@@ -2,7 +2,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import type { GitSyncConfigRequest, GitSyncConfigDTO } from "@/lib/types/git";
 import { createGitSyncSchema } from "@/lib/validations/git-sync-schema";
 import { useGitHandle } from "@/components/api-handle/git-handle";
-import { Eye, EyeOff, ShieldCheck } from "lucide-react";
+import { Eye, EyeOff, ShieldCheck, Plus, Trash2, Settings } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -11,7 +11,7 @@ import { useTranslation } from "react-i18next";
 import { VaultType } from "@/lib/types/vault";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 
 
 interface GitConfigFormProps {
@@ -48,21 +48,31 @@ export function GitConfigForm({ config, vaults, onSubmit, onCancel }: GitConfigF
             isEnabled: config.isEnabled,
             delay: config.delay,
             retentionDays: config.retentionDays ?? 30,
+            includeConfig: config.includeConfig,
+            configSyncRules: config.configSyncRules || [],
         } : {
             isEnabled: true,
             branch: "main",
             delay: 10,
             retentionDays: 30,
+            includeConfig: false,
+            configSyncRules: [".obsidian/appearance.json", ".obsidian/community-plugins.json"],
         }
     ), [config?.id, config?.vault, config?.repoUrl, config?.branch, config?.username, config?.password, config?.isEnabled, config?.delay, config?.retentionDays])
 
-    const { register, handleSubmit, formState: { errors, isSubmitting }, setValue, getValues, reset, watch } = useForm<GitSyncConfigRequest>({
+    const { register, handleSubmit, formState: { errors, isSubmitting }, setValue, getValues, reset, watch, control } = useForm<GitSyncConfigRequest>({
         resolver: zodResolver(schema),
         defaultValues,
     })
 
+    const { fields, append, remove } = useFieldArray({
+        control,
+        name: "configSyncRules" as never
+    })
+
     const selectedVault = watch("vault")
     const isEnabled = watch("isEnabled")
+    const includeConfig = watch("includeConfig")
 
     useEffect(() => {
         reset(defaultValues)
@@ -182,6 +192,68 @@ export function GitConfigForm({ config, vaults, onSubmit, onCancel }: GitConfigF
                     <p className="text-[10px] text-muted-foreground ml-1">{t("ui.git.retentionDaysDesc")}</p>
                     {errors.retentionDays && <p className="text-[11px] text-destructive mt-1 ml-1">{errors.retentionDays.message}</p>}
                 </div>
+            </div>
+
+            {/* 配置同步设置 */}
+            <div className="space-y-4 pt-4 border-t border-border/50">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                        <Checkbox
+                            id="includeConfig"
+                            checked={Boolean(includeConfig)}
+                            onCheckedChange={(checked) => setValue("includeConfig", Boolean(checked))}
+                            className="border-input data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                        />
+                        <Label htmlFor="includeConfig" className="text-sm font-semibold cursor-pointer">
+                            {t("ui.git.form.includeConfig")}
+                        </Label>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{t("ui.git.form.includeConfigDesc")}</p>
+                </div>
+
+                {includeConfig && (
+                    <div className="space-y-3 pl-6 border-l-2 border-primary/20 animate-in fade-in slide-in-from-left-2 duration-200">
+                        <div className="space-y-2">
+                            {fields.map((field, index) => (
+                                <div key={field.id} className="flex items-center gap-2 group">
+                                    <div className="relative flex-1">
+                                        <Input
+                                            {...register(`configSyncRules.${index}` as never)}
+                                            placeholder=".obsidian/settings.json"
+                                            className="bg-background border-input h-9 text-sm focus-visible:ring-1"
+                                        />
+                                    </div>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-9 w-9 shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/5"
+                                        onClick={() => remove(index)}
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            ))}
+                        </div>
+
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="h-8 text-xs border-dashed border-primary/40 hover:border-primary text-primary/80 hover:text-primary hover:bg-primary/5"
+                            onClick={() => append("")}
+                        >
+                            <Plus className="h-3.5 w-3.5 mr-1.5" />
+                            {t("ui.git.form.addRule")}
+                        </Button>
+
+                        {errors.configSyncRules && (
+                            <p className="text-[11px] text-destructive mt-1">
+                                {(errors as any).configSyncRules.root?.message || (errors as any).configSyncRules.message}
+                            </p>
+                        )}
+                    </div>
+                )}
             </div>
 
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-3 border-t border-border">

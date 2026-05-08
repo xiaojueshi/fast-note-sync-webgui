@@ -14,6 +14,8 @@ export interface GitSyncConfigDTO {
     lastSyncTime: string
     lastStatus: number // 0: Idle, 1: Running, 2: Success, 3: Failed, 4: Shutdown
     lastMessage: string
+    includeConfig: boolean
+    configSyncRules: string[]
     updatedAt: string
 }
 
@@ -30,6 +32,8 @@ export interface GitSyncConfigRequest {
     delay: number
     retentionDays: number
     isEnabled: boolean
+    includeConfig: boolean
+    configSyncRules: string[]
 }
 
 /**
