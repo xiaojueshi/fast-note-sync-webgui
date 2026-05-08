@@ -59,7 +59,6 @@ function App() {
   const [adminUid, setAdminUid] = useState<number | null>(null)
   const [configLoaded, setConfigLoaded] = useState(false)
 
-  const currentUid = localStorage.getItem("uid") ? parseInt(localStorage.getItem("uid")!) : null
   const [isAdminByCheck, setIsAdminByCheck] = useState<boolean | null>(null)
   const isAdmin = isAdminByCheck === true
 

@@ -2,7 +2,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import type { GitSyncConfigRequest, GitSyncConfigDTO } from "@/lib/types/git";
 import { createGitSyncSchema } from "@/lib/validations/git-sync-schema";
 import { useGitHandle } from "@/components/api-handle/git-handle";
-import { Eye, EyeOff, ShieldCheck, Plus, Trash2, Settings } from "lucide-react";
+import { Eye, EyeOff, ShieldCheck, Plus, Trash2 } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
