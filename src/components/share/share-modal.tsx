@@ -116,7 +116,8 @@ export function ShareModal({ vault, path, pathHash, open, onOpenChange, onShareC
 
     const getFullUrl = (data?: ShareCreateResponse) => {
         if (!data || !data.token) return "";
-        return `${window.location.origin}/share/${data.id}/${data.token}`;
+        const base = data.baseUrl || "";
+        return `${base}/share/${data.id}/${data.token}`;
     };
 
     const onCopyLink = () => {

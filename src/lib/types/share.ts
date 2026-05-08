@@ -15,6 +15,7 @@ export interface ShareItem {
   expiresAt: string
   createdAt: string
   updatedAt: string
+  baseUrl?: string
 }
 
 // 对应 dto.ShareListResponse (data 部分)
@@ -36,4 +37,5 @@ export interface ShareCreateResponse {
   shortLink?: string
   isPassword?: boolean
   expiresAt: string
+  baseUrl?: string
 }
