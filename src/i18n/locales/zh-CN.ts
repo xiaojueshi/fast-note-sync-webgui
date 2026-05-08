@@ -387,6 +387,7 @@ export default {
     "ui.system.newVersionAvailable": "发现新版本",
     "ui.system.alreadyLatest": "已是最新版本",
     "ui.system.viewRelease": "查看发布页",
+    "ui.system.upgrade": "升级",
     "ui.system.upgradeNow": "立即升级",
     "ui.system.upgrading": "升级中...",
     "ui.system.upgradeSuccess": "升级触发成功，页面即将刷新",

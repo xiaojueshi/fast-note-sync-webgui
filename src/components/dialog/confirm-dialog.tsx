@@ -1,4 +1,4 @@
-import { CheckCircle, XCircle, AlertTriangle, Info, HelpCircle, } from "lucide-react";
+import { CheckCircle, XCircle, AlertTriangle, Info, HelpCircle, Rocket } from "lucide-react";
 import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog";
 import { buttonVariants } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import * as React from "react";
 
 
-type DialogType = "success" | "error" | "warning" | "info" | "confirm"
+type DialogType = "success" | "error" | "warning" | "info" | "confirm" | "upgrade"
 
 type ConfirmDialogProps = {
   isOpen: boolean
@@ -48,6 +48,11 @@ const typeConfig: Record<DialogType, {
     iconClass: "text-amber-500",
     titleKey: "ui.common.confirm",
   },
+  upgrade: {
+    icon: Rocket,
+    iconClass: "text-primary",
+    titleKey: "ui.system.newVersionAvailable",
+  },
 }
 
 export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
@@ -70,7 +75,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       if (!isOpen) return
       if (e.key === "Enter") {
         e.preventDefault()
-        if (type === "confirm" && onConfirm) {
+        if ((type === "confirm" || type === "upgrade") && onConfirm) {
           onConfirm()
         } else {
           onCancel()
@@ -83,9 +88,6 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   }, [isOpen, type, onConfirm, onCancel])
 
   const handleNonConfirmClose = () => {
-    if (type !== "confirm" && onConfirm) {
-      onConfirm()
-    }
     onCancel()
   }
 
@@ -129,7 +131,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 
           {/* Footer with buttons */}
           <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-0 sm:space-x-2">
-            {type === "confirm" ? (
+            {(type === "confirm" || type === "upgrade") ? (
               <>
                 <AlertDialogPrimitive.Cancel
                   className={cn(buttonVariants({ variant: "outline" }), "w-full sm:w-auto rounded-xl")}
@@ -138,10 +140,10 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                   {t("ui.common.cancel")}
                 </AlertDialogPrimitive.Cancel>
                 <AlertDialogPrimitive.Action
-                  className={cn(buttonVariants({ variant: "destructive" }), "w-full sm:w-auto rounded-xl")}
+                  className={cn(buttonVariants({ variant: type === "upgrade" ? "default" : "destructive" }), "w-full sm:w-auto rounded-xl")}
                   onClick={onConfirm}
                 >
-                  {t("ui.common.confirm")}
+                  {t(type === "upgrade" ? "ui.system.upgradeNow" : "ui.common.confirm")}
                 </AlertDialogPrimitive.Action>
               </>
             ) : (

@@ -64,7 +64,14 @@ export function FileList({ vault, vaults, onVaultChange, isRecycle = false, page
     const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
     const [selectedPaths, setSelectedPaths] = useState<Set<string>>(new Set());
     const [batchRestoreProgress, setBatchRestoreProgress] = useState<{ current: number; total: number } | null>(null);
-    const [viewMode, setViewMode] = useState<ViewMode>("folder");
+    const [viewMode, setViewMode] = useState<ViewMode>(() => {
+        const saved = localStorage.getItem("fileViewMode");
+        return (saved as ViewMode) || "folder";
+    });
+
+    useEffect(() => {
+        localStorage.setItem("fileViewMode", viewMode);
+    }, [viewMode]);
     const [folders, setFolders] = useState<Folder[]>([]);
     const fileRequestIdRef = useRef(0);
     const { trashType, setModule } = useAppStore();

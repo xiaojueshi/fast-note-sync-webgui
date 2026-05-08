@@ -62,7 +62,14 @@ export function NoteManager({
     const [shareFilter, setShareFilter] = useState<ShareFilterType>(null);
 
     // Lifted view mode state (survives editor unmount)
-    const [viewMode, setViewMode] = useState<ViewModeType>("folder");
+    const [viewMode, setViewMode] = useState<ViewModeType>(() => {
+        const saved = localStorage.getItem("noteViewMode");
+        return (saved as ViewModeType) || "folder";
+    });
+
+    useEffect(() => {
+        localStorage.setItem("noteViewMode", viewMode);
+    }, [viewMode]);
 
     useEffect(() => {
         localStorage.setItem("notePageSize", pageSize.toString());
@@ -103,7 +110,6 @@ export function NoteManager({
         setCurrentPath("");
         setCurrentPathHash("");
         setPathHashMap({});
-        setViewMode("folder");
         setShareFilter(null);
     }, [vault]);
 
