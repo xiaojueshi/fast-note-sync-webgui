@@ -221,12 +221,12 @@ export const TokenManager = forwardRef<TokenManagerHandle, TokenManagerProps>(
         let next = isSelecting ? [...prev, f] : prev.filter(i => i !== f);
 
         if (isSelecting) {
-          if (f.endsWith("_w")) {
-            const rVersion = f.replace("_w", "_r");
+          if (f.endsWith("_rw")) {
+            const rVersion = f.replace("_rw", "_r");
             next = next.filter(i => i !== rVersion);
           } else if (f.endsWith("_r")) {
-            const wVersion = f.replace("_r", "_w");
-            next = next.filter(i => i !== wVersion);
+            const rwVersion = f.replace("_r", "_rw");
+            next = next.filter(i => i !== rwVersion);
           }
         }
         return next;
@@ -274,11 +274,14 @@ export const TokenManager = forwardRef<TokenManagerHandle, TokenManagerProps>(
     const getFuncLabel = (func: string) => {
       switch (func) {
         case "note_r": return t("ui.token.permNoteR");
-        case "note_w": return t("ui.token.permNoteW");
+        case "note_w":
+        case "note_rw": return t("ui.token.permNoteRW");
         case "file_r": return t("ui.token.permFileR");
-        case "file_w": return t("ui.token.permFileW");
+        case "file_w":
+        case "file_rw": return t("ui.token.permFileRW");
         case "config_r": return t("ui.token.permConfigR");
-        case "config_w": return t("ui.token.permConfigW");
+        case "config_w":
+        case "config_rw": return t("ui.token.permConfigRW");
         default: return func;
       }
     };
@@ -436,24 +439,69 @@ export const TokenManager = forwardRef<TokenManagerHandle, TokenManagerProps>(
                     </span>
                   </Label>
                   <div className="grid grid-cols-3 gap-y-3 gap-x-4 p-3 rounded-xl bg-muted/50 border border-border">
-                    {[
-                      { id: "note_r", label: t("ui.token.funcNoteR") },
-                      { id: "note_w", label: t("ui.token.funcNoteW") },
-                      { id: "file_r", label: t("ui.token.funcFileR") },
-                      { id: "file_w", label: t("ui.token.funcFileW") },
-                      { id: "config_r", label: t("ui.token.funcConfigR") },
-                      { id: "config_w", label: t("ui.token.funcConfigW") },
-                    ].map((opt) => (
-                      <div key={opt.id} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`f-${opt.id}`}
-                          checked={newFuncDims.includes(opt.id)}
-                          onCheckedChange={() => toggleFuncDim(opt.id)}
-                          className="h-3.5 w-3.5"
-                        />
-                        <Label htmlFor={`f-${opt.id}`} className="cursor-pointer text-xs truncate" title={opt.label}>{opt.label}</Label>
+                    {/* Notes Column */}
+                    <div className="space-y-2">
+                      <div className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider mb-1 px-1 border-b border-border/30 pb-1">
+                        {t("ui.vault.note")}
                       </div>
-                    ))}
+                      {[
+                        { id: "note_r", label: t("ui.token.funcNoteR") },
+                        { id: "note_rw", label: t("ui.token.funcNoteRW") },
+                      ].map((opt) => (
+                        <div key={opt.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`f-${opt.id}`}
+                            checked={newFuncDims.includes(opt.id)}
+                            onCheckedChange={() => toggleFuncDim(opt.id)}
+                            className="h-3.5 w-3.5"
+                          />
+                          <Label htmlFor={`f-${opt.id}`} className="cursor-pointer text-[11px] truncate" title={opt.label}>{opt.label.includes(' - ') ? opt.label.split(' - ')[1] : opt.label}</Label>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Files Column */}
+                    <div className="space-y-2">
+                      <div className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider mb-1 px-1 border-b border-border/30 pb-1">
+                        {t("ui.file.file")}
+                      </div>
+                      {[
+                        { id: "file_r", label: t("ui.token.funcFileR") },
+                        { id: "file_rw", label: t("ui.token.funcFileRW") },
+                      ].map((opt) => (
+                        <div key={opt.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`f-${opt.id}`}
+                            checked={newFuncDims.includes(opt.id)}
+                            onCheckedChange={() => toggleFuncDim(opt.id)}
+                            className="h-3.5 w-3.5"
+                          />
+                          <Label htmlFor={`f-${opt.id}`} className="cursor-pointer text-[11px] truncate" title={opt.label}>{opt.label.includes(' - ') ? opt.label.split(' - ')[1] : opt.label}</Label>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Config Column */}
+                    <div className="space-y-2">
+                      <div className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider mb-1 px-1 border-b border-border/30 pb-1">
+                        {t("ui.nav.menuSettings")}
+                      </div>
+                      {[
+                        { id: "config_r", label: t("ui.token.funcConfigR") },
+                        { id: "config_rw", label: t("ui.token.funcConfigRW") },
+                      ].map((opt) => (
+                        <div key={opt.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`f-${opt.id}`}
+                            checked={newFuncDims.includes(opt.id)}
+                            onCheckedChange={() => toggleFuncDim(opt.id)}
+                            className="h-3.5 w-3.5"
+                          />
+                          <Label htmlFor={`f-${opt.id}`} className="cursor-pointer text-[11px] truncate" title={opt.label}>{opt.label.includes(' - ') ? opt.label.split(' - ')[1] : opt.label}</Label>
+                        </div>
+                      ))}
+                    </div>
+
                     <div className="col-span-3 border-t border-border/50 pt-2 mt-1">
                       <div className="flex items-center space-x-2">
                         <Checkbox
@@ -462,7 +510,7 @@ export const TokenManager = forwardRef<TokenManagerHandle, TokenManagerProps>(
                           onCheckedChange={(checked) => checked ? setNewFuncDims([]) : setNewFuncDims(["note_r"])}
                           className="h-3.5 w-3.5"
                         />
-                        <Label htmlFor="f-all" className="cursor-pointer font-bold text-xs">{t("ui.common.unrestricted")}</Label>
+                        <Label htmlFor="f-all" className="cursor-pointer font-bold text-[11px]">{t("ui.common.unrestricted")}</Label>
                       </div>
                     </div>
                   </div>
