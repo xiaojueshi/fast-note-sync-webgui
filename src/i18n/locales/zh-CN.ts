@@ -111,6 +111,7 @@ export default {
     "ui.auth.registerRequestFailed": "注册失败，请重试",
     "ui.token.description": "管理您的活动会话和 API 访问令牌。您可以随时注销不再使用的设备，以确保账号安全。",
     "ui.token.noTokens": "暂无活动令牌",
+    "ui.token.tokenId": "令牌 ID",
     "ui.token.statusExpired": "已过期",
     "ui.token.statusActive": "活跃中",
     "ui.token.expiresAt": "失效时间",

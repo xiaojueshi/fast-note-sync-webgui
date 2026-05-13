@@ -111,6 +111,7 @@ export default {
     "ui.auth.registerRequestFailed": "Registration failed, please try again",
     "ui.token.description": "Manage your active sessions and API access tokens. You can revoke devices you no longer use to ensure account security.",
     "ui.token.noTokens": "No active tokens",
+    "ui.token.tokenId": "Token ID",
     "ui.token.statusExpired": "Expired",
     "ui.token.statusActive": "Active",
     "ui.token.expiresAt": "Expires At",

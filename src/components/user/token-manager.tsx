@@ -613,7 +613,10 @@ export const TokenManager = forwardRef<TokenManagerHandle, TokenManagerProps>(
                             </div>
                           </div>
                           <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                            <span className="text-[10px] text-muted-foreground flex items-center gap-1 shrink-0">
+                            <span className="text-[10px] text-muted-foreground flex items-center gap-1.5 shrink-0">
+                              <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-normal bg-primary/5 text-primary/70 border-primary/10">
+                                ID: {token.id}
+                              </Badge>
                               {token.issueType === 1 ? <Globe className="h-3 w-3" /> : (
                                 React.cloneElement(getClientIcon(token.clientType) as React.ReactElement<{ className?: string }>, { className: "h-3 w-3" })
                               )}
