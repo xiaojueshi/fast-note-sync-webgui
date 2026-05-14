@@ -534,7 +534,7 @@ export default {
     "ui.storage.storageType.webdav": "WebDAV",
     "ui.storage.selectType": "选择存储类型",
     "ui.storage.endpoint": "终端节点 ( Endpoint )",
-    "ui.storage.region": "区域 ( S3 Region )",
+    "ui.storage.region": "区域 ( Region )",
     "ui.storage.accountId": "账户ID ( R2 Account ID )",
     "ui.storage.bucketName": "存储桶",
     "ui.storage.accessKeyId": "密钥 ID ( AccessKey ID )",
@@ -547,6 +547,7 @@ export default {
     // --- ui.storage placeholders ---
     "ui.storage.placeholder.endpoint.oss": "oss-cn-hangzhou.aliyuncs.com",
     "ui.storage.placeholder.endpoint.minio": "http://192.168.1.100:9000",
+    "ui.storage.placeholder.region.oss": "cn-hangzhou",
     "ui.storage.placeholder.region": "us-east-1",
     "ui.storage.placeholder.accountId": "your-account-id",
     "ui.storage.placeholder.bucketName": "my-bucket",
@@ -558,8 +559,9 @@ export default {
     "ui.storage.placeholder.customPath": "data/obsidian",
     "ui.storage.placeholder.accessUrlPrefix": "http://192.168.1.100:5244",
     // --- ≈ ---
-    "ui.storage.help.endpoint.oss": "阿里云 OSS 的 Endpoint 地址，不含 Bucket 名称",
+    "ui.storage.help.endpoint.oss": "阿里云 OSS 的 Endpoint 地址，可以省略不填，直接输入 <b>区域Region</b> 即可",
     "ui.storage.help.endpoint.minio": "MinIO 服务地址，需包含协议前缀和端口",
+    "ui.storage.help.region.oss": "阿里云 OSS 所在区域，如 cn-hangzhou",
     "ui.storage.help.region": "S3 存储桶所在区域",
     "ui.storage.help.accountId": "Cloudflare 账户 ID，可在控制台右侧栏找到",
     "ui.storage.help.webdavUrl": "需包含协议前缀 (http:// 或 https://) 和完整路径",

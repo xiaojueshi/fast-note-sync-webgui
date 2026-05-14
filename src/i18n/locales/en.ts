@@ -534,7 +534,7 @@ export default {
     "ui.storage.storageType.webdav": "WebDAV",
     "ui.storage.selectType": "Select Storage Type",
     "ui.storage.endpoint": "Endpoint",
-    "ui.storage.region": "Region (S3 Region)",
+    "ui.storage.region": "Region",
     "ui.storage.accountId": "Account ID (R2 Account ID)",
     "ui.storage.bucketName": "Bucket",
     "ui.storage.accessKeyId": "Access Key ID",
@@ -547,6 +547,7 @@ export default {
     // --- ui.storage placeholders ---
     "ui.storage.placeholder.endpoint.oss": "oss-cn-hangzhou.aliyuncs.com",
     "ui.storage.placeholder.endpoint.minio": "http://192.168.1.100:9000",
+    "ui.storage.placeholder.region.oss": "cn-hangzhou",
     "ui.storage.placeholder.region": "us-east-1",
     "ui.storage.placeholder.accountId": "your-account-id",
     "ui.storage.placeholder.bucketName": "my-bucket",
@@ -560,6 +561,7 @@ export default {
     // --- ≈ ---
     "ui.storage.help.endpoint.oss": "Aliyun OSS Endpoint address, excluding the Bucket name",
     "ui.storage.help.endpoint.minio": "MinIO service address, must include protocol prefix and port",
+    "ui.storage.help.region.oss": "Aliyun OSS Region, e.g., cn-hangzhou",
     "ui.storage.help.region": "Region where the S3 bucket is located",
     "ui.storage.help.accountId": "Cloudflare Account ID, can be found in the right sidebar of the console",
     "ui.storage.help.webdavUrl": "Must include protocol prefix (http:// or https://) and full path",

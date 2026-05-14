@@ -532,7 +532,7 @@ export default {
     "ui.storage.storageType.webdav": "WebDAV",
     "ui.storage.selectType": "저장소 유형 선택",
     "ui.storage.endpoint": "엔드포인트 ( Endpoint )",
-    "ui.storage.region": "리전 ( S3 Region )",
+    "ui.storage.region": "리전 ( Region )",
     "ui.storage.accountId": "계정 ID ( R2 Account ID )",
     "ui.storage.bucketName": "버킷",
     "ui.storage.accessKeyId": "키 ID ( AccessKey ID )",
@@ -545,6 +545,7 @@ export default {
     // --- ui.storage placeholders ---
     "ui.storage.placeholder.endpoint.oss": "oss-cn-hangzhou.aliyuncs.com",
     "ui.storage.placeholder.endpoint.minio": "http://192.168.1.100:9000",
+    "ui.storage.placeholder.region.oss": "cn-hangzhou",
     "ui.storage.placeholder.region": "us-east-1",
     "ui.storage.placeholder.accountId": "your-account-id",
     "ui.storage.placeholder.bucketName": "my-bucket",
@@ -558,6 +559,7 @@ export default {
     // --- ≈ ---
     "ui.storage.help.endpoint.oss": "Bucket 이름이 없는 Aliyun OSS Endpoint 주소",
     "ui.storage.help.endpoint.minio": "MinIO 서비스 주소 (프로토콜 접두사와 포트 포함)",
+    "ui.storage.help.region.oss": "Aliyun OSS 지역, 예: cn-hangzhou",
     "ui.storage.help.region": "S3 버킷이 위치한 지역",
     "ui.storage.help.accountId": "Cloudflare 계정 ID (콘솔 오른쪽 사이드바에서 찾을 수 있음)",
     "ui.storage.help.webdavUrl": "프로토콜 접두사 (http:// 또는 https://) 와 전체 경로를 포함해야 합니다",

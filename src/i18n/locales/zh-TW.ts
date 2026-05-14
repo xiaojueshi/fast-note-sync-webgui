@@ -532,7 +532,7 @@ export default {
     "ui.storage.storageType.webdav": "WebDAV",
     "ui.storage.selectType": "選擇儲存類型",
     "ui.storage.endpoint": "終端節點 ( Endpoint )",
-    "ui.storage.region": "區域 ( S3 Region )",
+    "ui.storage.region": "區域 ( Region )",
     "ui.storage.accountId": "帳戶ID ( R2 Account ID )",
     "ui.storage.bucketName": "儲存桶",
     "ui.storage.accessKeyId": "金鑰 ID ( AccessKey ID )",
@@ -545,6 +545,7 @@ export default {
     // --- ui.storage placeholders ---
     "ui.storage.placeholder.endpoint.oss": "oss-cn-hangzhou.aliyuncs.com",
     "ui.storage.placeholder.endpoint.minio": "http://192.168.1.100:9000",
+    "ui.storage.placeholder.region.oss": "cn-hangzhou",
     "ui.storage.placeholder.region": "us-east-1",
     "ui.storage.placeholder.accountId": "your-account-id",
     "ui.storage.placeholder.bucketName": "my-bucket",
@@ -558,6 +559,7 @@ export default {
     // --- ≈ ---
     "ui.storage.help.endpoint.oss": "阿里雲 OSS 的 Endpoint 地址，不含 Bucket 名稱",
     "ui.storage.help.endpoint.minio": "MinIO 服務地址，需包含協議前綴和端口",
+    "ui.storage.help.region.oss": "阿里雲 OSS 所在區域，如 cn-hangzhou",
     "ui.storage.help.region": "S3 儲存桶所在區域",
     "ui.storage.help.accountId": "Cloudflare 帳戶 ID，可在控制台右側欄找到",
     "ui.storage.help.webdavUrl": "需包含協議前綴 (http:// 或 https://) 和完整路徑",

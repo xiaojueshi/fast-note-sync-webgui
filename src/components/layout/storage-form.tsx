@@ -97,17 +97,26 @@ export function StorageForm({ config, types, onSubmit, onCancel }: StorageFormPr
                     <div className="space-y-1.5">
                         <Label htmlFor="endpoint" className="text-xs font-semibold text-muted-foreground ml-1">{t("ui.storage.endpoint")}</Label>
                         <Input id="endpoint" autoComplete="off" placeholder={t("ui.storage.placeholder.endpoint.oss")} className="bg-background border-input" {...register("endpoint")} />
-                        <p className="text-[11px] text-muted-foreground ml-1">{t("ui.storage.help.endpoint.oss")}</p>
+                        <p className="text-[11px] text-muted-foreground ml-1" dangerouslySetInnerHTML={{ __html: t("ui.storage.help.endpoint.oss") }} />
                         {errors.endpoint && <p className="text-[11px] text-destructive mt-1 ml-1">{errors.endpoint.message}</p>}
                     </div>
                 )}
 
-                {/* 区域 (S3 和 MinIO) */}
-                {(storageType === "s3" || storageType === "minio") && (
+                {/* 区域 (OSS, S3 和 MinIO) */}
+                {(storageType === "oss" || storageType === "s3" || storageType === "minio") && (
                     <div className="space-y-1.5">
                         <Label htmlFor="region" className="text-xs font-semibold text-muted-foreground ml-1">{t("ui.storage.region")}</Label>
-                        <Input id="region" autoComplete="off" placeholder={t("ui.storage.placeholder.region")} className="bg-background border-input" {...register("region")} />
-                        <p className="text-[11px] text-muted-foreground ml-1">{t("ui.storage.help.region")}</p>
+                        <Input 
+                            id="region" 
+                            autoComplete="off" 
+                            placeholder={storageType === "oss" ? t("ui.storage.placeholder.region.oss") : t("ui.storage.placeholder.region")} 
+                            className="bg-background border-input" 
+                            {...register("region")} 
+                        />
+                        <p 
+                            className="text-[11px] text-muted-foreground ml-1" 
+                            dangerouslySetInnerHTML={{ __html: storageType === "oss" ? t("ui.storage.help.region.oss") : t("ui.storage.help.region") }} 
+                        />
                         {errors.region && <p className="text-[11px] text-destructive mt-1 ml-1">{errors.region.message}</p>}
                     </div>
                 )}
@@ -117,7 +126,7 @@ export function StorageForm({ config, types, onSubmit, onCancel }: StorageFormPr
                     <div className="space-y-1.5">
                         <Label htmlFor="accountId" className="text-xs font-semibold text-muted-foreground ml-1">{t("ui.storage.accountId")}</Label>
                         <Input id="accountId" autoComplete="off" placeholder={t("ui.storage.placeholder.accountId")} className="bg-background border-input" {...register("accountId")} />
-                        <p className="text-[11px] text-muted-foreground ml-1">{t("ui.storage.help.accountId")}</p>
+                        <p className="text-[11px] text-muted-foreground ml-1" dangerouslySetInnerHTML={{ __html: t("ui.storage.help.accountId") }} />
                         {errors.accountId && <p className="text-[11px] text-destructive mt-1 ml-1">{errors.accountId.message}</p>}
                     </div>
                 )}
@@ -127,7 +136,7 @@ export function StorageForm({ config, types, onSubmit, onCancel }: StorageFormPr
                     <div className="space-y-1.5">
                         <Label htmlFor="endpoint" className="text-xs font-semibold text-muted-foreground ml-1">{t("ui.storage.webdavUrl")}</Label>
                         <Input id="endpoint" autoComplete="off" placeholder={t("ui.storage.placeholder.webdavUrl")} className="bg-background border-input" {...register("endpoint")} />
-                        <p className="text-[11px] text-muted-foreground ml-1">{t("ui.storage.help.webdavUrl")}</p>
+                        <p className="text-[11px] text-muted-foreground ml-1" dangerouslySetInnerHTML={{ __html: t("ui.storage.help.webdavUrl") }} />
                         {errors.endpoint && <p className="text-[11px] text-destructive mt-1 ml-1">{errors.endpoint.message}</p>}
                     </div>
                 )}
@@ -137,7 +146,7 @@ export function StorageForm({ config, types, onSubmit, onCancel }: StorageFormPr
                     <div className="space-y-1.5">
                         <Label htmlFor="user" className="text-xs font-semibold text-muted-foreground ml-1">{t("ui.storage.webdavUser")}</Label>
                         <Input id="user" autoComplete="off" placeholder={t("ui.storage.placeholder.webdavUser")} className="bg-background border-input" {...register("user")} />
-                        <p className="text-[11px] text-muted-foreground ml-1">{t("ui.storage.help.webdavUser")}</p>
+                        <p className="text-[11px] text-muted-foreground ml-1" dangerouslySetInnerHTML={{ __html: t("ui.storage.help.webdavUser") }} />
                         {errors.user && <p className="text-[11px] text-destructive mt-1 ml-1">{errors.user.message}</p>}
                     </div>
                 )}
@@ -164,7 +173,7 @@ export function StorageForm({ config, types, onSubmit, onCancel }: StorageFormPr
                                 {showWebdavPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </Button>
                         </div>
-                        <p className="text-[11px] text-muted-foreground ml-1">{t("ui.storage.help.webdavPassword")}</p>
+                        <p className="text-[11px] text-muted-foreground ml-1" dangerouslySetInnerHTML={{ __html: t("ui.storage.help.webdavPassword") }} />
                         {errors.password && <p className="text-[11px] text-destructive mt-1 ml-1">{errors.password.message}</p>}
                     </div>
                 )}
@@ -174,7 +183,7 @@ export function StorageForm({ config, types, onSubmit, onCancel }: StorageFormPr
                     <div className="space-y-1.5">
                         <Label htmlFor="endpoint" className="text-xs font-semibold text-muted-foreground ml-1">{t("ui.storage.endpoint")}</Label>
                         <Input id="endpoint" autoComplete="off" placeholder={t("ui.storage.placeholder.endpoint.minio")} className="bg-background border-input" {...register("endpoint")} />
-                        <p className="text-[11px] text-muted-foreground ml-1">{t("ui.storage.help.endpoint.minio")}</p>
+                        <p className="text-[11px] text-muted-foreground ml-1" dangerouslySetInnerHTML={{ __html: t("ui.storage.help.endpoint.minio") }} />
                         {errors.endpoint && <p className="text-[11px] text-destructive mt-1 ml-1">{errors.endpoint.message}</p>}
                     </div>
                 )}
@@ -228,7 +237,7 @@ export function StorageForm({ config, types, onSubmit, onCancel }: StorageFormPr
                 <div className="space-y-1.5">
                     <Label htmlFor="customPath" className="text-xs font-semibold text-muted-foreground ml-1">{t("ui.storage.customPath")}</Label>
                     <Input id="customPath" autoComplete="off" placeholder={t("ui.storage.placeholder.customPath")} className="bg-background border-input" {...register("customPath")} />
-                    <p className="text-[11px] text-muted-foreground ml-1">{t("ui.storage.help.customPath")}</p>
+                    <p className="text-[11px] text-muted-foreground ml-1" dangerouslySetInnerHTML={{ __html: t("ui.storage.help.customPath") }} />
                     {errors.customPath && <p className="text-[11px] text-destructive mt-1 ml-1">{errors.customPath.message}</p>}
                 </div>
 
@@ -237,7 +246,7 @@ export function StorageForm({ config, types, onSubmit, onCancel }: StorageFormPr
                 <div className="space-y-1.5">
                     <Label htmlFor="accessUrlPrefix" className="text-xs font-semibold text-muted-foreground ml-1">{t("ui.storage.accessUrlPrefix")}</Label>
                     <Input id="accessUrlPrefix" autoComplete="off" placeholder={t("ui.storage.placeholder.accessUrlPrefix")} className="bg-background border-input" {...register("accessUrlPrefix")} />
-                    <p className="text-[11px] text-muted-foreground ml-1">{t("ui.storage.help.accessUrlPrefix")}</p>
+                    <p className="text-[11px] text-muted-foreground ml-1" dangerouslySetInnerHTML={{ __html: t("ui.storage.help.accessUrlPrefix") }} />
                     {errors.accessUrlPrefix && <p className="text-[11px] text-destructive mt-1 ml-1">{errors.accessUrlPrefix.message}</p>}
                 </div>
             </div>

@@ -532,7 +532,7 @@ export default {
     "ui.storage.storageType.webdav": "WebDAV",
     "ui.storage.selectType": "ストレージタイプを選択",
     "ui.storage.endpoint": "エンドポイント ( Endpoint )",
-    "ui.storage.region": "リージョン ( S3 Region )",
+    "ui.storage.region": "リージョン ( Region )",
     "ui.storage.accountId": "アカウント ID ( R2 Account ID )",
     "ui.storage.bucketName": "バケット",
     "ui.storage.accessKeyId": "アクセスキー ID ( AccessKey ID )",
@@ -545,6 +545,7 @@ export default {
     // --- ui.storage placeholders ---
     "ui.storage.placeholder.endpoint.oss": "oss-cn-hangzhou.aliyuncs.com",
     "ui.storage.placeholder.endpoint.minio": "http://192.168.1.100:9000",
+    "ui.storage.placeholder.region.oss": "cn-hangzhou",
     "ui.storage.placeholder.region": "us-east-1",
     "ui.storage.placeholder.accountId": "your-account-id",
     "ui.storage.placeholder.bucketName": "my-bucket",
@@ -558,6 +559,7 @@ export default {
     // --- ≈ ---
     "ui.storage.help.endpoint.oss": "Bucket 名を含まないアリババクラウド OSS の Endpoint アドレス",
     "ui.storage.help.endpoint.minio": "MinIO サービスのアドレス。プロトコルプレフィックスとポートを含める必要があります",
+    "ui.storage.help.region.oss": "アリババクラウド OSS のリージョン。例: cn-hangzhou",
     "ui.storage.help.region": "S3 ストレージバケットが所在するリージョン",
     "ui.storage.help.accountId": "Cloudflare アカウント ID。コンソールの右サイドバーで確認できます",
     "ui.storage.help.webdavUrl": "プロトコルプレフィックス (http:// または https://) と完全なパスを含める必要があります",
