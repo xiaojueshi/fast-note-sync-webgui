@@ -1,4 +1,4 @@
-import { Pencil, Trash2, Plus, Key, Library, RefreshCw, Check, X, Search, GripVertical, FileText, Paperclip, HardDrive, Wifi, Clock } from "lucide-react";
+import { Pencil, Trash2, Plus, Key, Globe, Monitor, Library, RefreshCw, Check, X, Search, GripVertical, FileText, Paperclip, HardDrive, Wifi, Clock } from "lucide-react";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, rectSortingStrategy } from "@dnd-kit/sortable";
 import { TokenManager, TokenManagerHandle } from "@/components/user/token-manager";
@@ -313,10 +313,19 @@ export function VaultList({ onNavigateToNotes, onNavigateToAttachments }: VaultL
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [tokenCount, setTokenCount] = useState(0)
   const [onlineCount, setOnlineCount] = useState(0)
+  const [tokenFilter, setTokenFilter] = useState<0 | 1 | 2>(0);
+  const [loginCount, setLoginCount] = useState(0)
+  const [manualCount, setManualCount] = useState(0)
 
   const { handleVaultList, handleVaultDelete, handleVaultUpdate } = useVaultHandle()
   const { openConfirmDialog } = useConfirmDialog()
   const tokenManagerRef = useRef<TokenManagerHandle>(null)
+
+  const handleSetTokenFilter = (type: 0 | 1 | 2) => {
+    const newType = tokenFilter === type ? 0 : type;
+    setTokenFilter(newType);
+    tokenManagerRef.current?.setFilterType(newType);
+  };
 
   // 拖拽传感器配置
   const sensors = useSensors(
@@ -617,16 +626,51 @@ export function VaultList({ onNavigateToNotes, onNavigateToAttachments }: VaultL
           <div className="flex items-center justify-between px-5 pt-5 pb-2">
             <div className="flex items-center gap-2.5">
               <h2 className="text-xl font-black tracking-tight">{t("ui.vault.authTokenConfig") || "授权令牌"}</h2>
+              
               <div className="flex items-center gap-1.5 ml-1">
-                <Badge variant="outline" className="h-5 text-[10px] px-1.5 font-bold flex items-center gap-1 bg-muted/50 text-muted-foreground border-border/60" title={t("ui.token.totalTokens")}>
+                <Badge variant="outline" className="h-5 text-[10px] px-1.5 font-bold flex items-center gap-1 bg-muted/30 text-muted-foreground/60 border-none" title={t("ui.token.totalTokens")}>
                   {tokenCount}
                 </Badge>
                 {onlineCount > 0 && (
-                  <Badge variant="outline" className="h-5 text-[10px] px-1.5 font-bold flex items-center gap-1 bg-emerald-500/10 text-emerald-500 border-emerald-500/20" title={t("ui.token.onlineDevices")}>
+                  <Badge variant="outline" className="h-5 text-[10px] px-1.5 font-bold flex items-center gap-1 bg-emerald-500/10 text-emerald-500 border-none" title={t("ui.token.onlineDevices")}>
                     <Wifi className="h-3 w-3 animate-pulse" />
                     {onlineCount}
                   </Badge>
                 )}
+              </div>
+
+              <div className="flex items-center gap-1.5 ml-2 border-l border-border/40 pl-2">
+                <Tooltip content={`${t("ui.token.issueTypeManual")}`} side="top">
+                  <Badge 
+                    variant="outline" 
+                    className={cn(
+                      "h-6 px-2 flex items-center justify-center gap-1.5 font-bold cursor-pointer transition-all duration-300 border-none rounded-lg",
+                      tokenFilter === 2 
+                        ? "bg-blue-500 text-white shadow-sm shadow-blue-500/20 scale-110" 
+                        : "bg-blue-500/10 text-blue-500 hover:bg-blue-500/20"
+                    )}
+                    onClick={() => handleSetTokenFilter(2)}
+                  >
+                    <Monitor className="h-3.5 w-3.5" />
+                    {manualCount > 0 && <span className="text-[10px] leading-none">{manualCount}</span>}
+                  </Badge>
+                </Tooltip>
+
+                <Tooltip content={`${t("ui.token.issueTypeLogin")}`} side="top">
+                  <Badge 
+                    variant="outline" 
+                    className={cn(
+                      "h-6 px-2 flex items-center justify-center gap-1.5 font-bold cursor-pointer transition-all duration-300 border-none rounded-lg",
+                      tokenFilter === 1 
+                        ? "bg-emerald-500 text-white shadow-sm shadow-emerald-500/20 scale-110" 
+                        : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
+                    )}
+                    onClick={() => handleSetTokenFilter(1)}
+                  >
+                    <Globe className="h-3.5 w-3.5" />
+                    {loginCount > 0 && <span className="text-[10px] leading-none">{loginCount}</span>}
+                  </Badge>
+                </Tooltip>
               </div>
             </div>
 
@@ -655,7 +699,14 @@ export function VaultList({ onNavigateToNotes, onNavigateToAttachments }: VaultL
           </div>
 
           <div className="flex-1 overflow-auto px-5 pb-8 scrollbar-thin">
-            <TokenManager ref={tokenManagerRef} isCompact onCountChange={setTokenCount} onOnlineCountChange={setOnlineCount} />
+            <TokenManager 
+              ref={tokenManagerRef} 
+              isCompact 
+              onCountChange={setTokenCount} 
+              onOnlineCountChange={setOnlineCount}
+              onLoginCountChange={setLoginCount}
+              onManualCountChange={setManualCount}
+            />
           </div>
 
         </div>

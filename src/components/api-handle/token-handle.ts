@@ -198,6 +198,32 @@ export function useTokenHandle() {
     }
   }, [token, handleListTokens]);
 
+  const handleRotateToken = useCallback(async (tokenId: number) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(addCacheBuster(env.API_URL + `/api/token/${tokenId}/rotate`), {
+        method: "POST",
+        headers: buildApiHeaders({ token }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to rotate token");
+      }
+
+      const res = await response.json();
+      if (res.code > 0 && res.data) {
+        handleListTokens();
+        return res.data.token as string;
+      }
+      return null;
+    } catch (e) {
+      console.error("Rotate token failed", e);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [token, handleListTokens]);
+
   const currentTokenID = useMemo(() => {
     if (!token) return null;
     try {
@@ -224,6 +250,7 @@ export function useTokenHandle() {
     handleRevokeToken,
     handleCreateToken,
     handleUpdateToken,
-    handleFetchTokenLogs
-  }), [tokens, isLoading, currentTokenID, handleListTokens, handleRevokeToken, handleCreateToken, handleUpdateToken, handleFetchTokenLogs]);
+    handleFetchTokenLogs,
+    handleRotateToken
+  }), [tokens, isLoading, currentTokenID, handleListTokens, handleRevokeToken, handleCreateToken, handleUpdateToken, handleFetchTokenLogs, handleRotateToken]);
 }

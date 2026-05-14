@@ -139,8 +139,8 @@ export default {
     "ui.token.ipWildcardHint": "支持 * 匹配。例如：192.168.*",
     "ui.token.uaWildcardHint": "支持 * 匹配。例如：Mozilla/*",
     "ui.token.current": "当前会话",
-    "ui.token.issueTypeLogin": "登录签发",
-    "ui.token.issueTypeManual": "手动签发",
+    "ui.token.issueTypeLogin": "登录",
+    "ui.token.issueTypeManual": "手动",
     "ui.token.editTitle": "编辑令牌",
     "ui.token.editDesc": "修改现有令牌的权限和有效期设置。",
     "ui.token.wsOnline": "WS在线",
@@ -180,6 +180,14 @@ export default {
     "ui.token.permFileRW": "附件读写",
     "ui.token.permConfigR": "配置只读",
     "ui.token.permConfigRW": "配置读写",
+    "ui.token.rotate": "轮换令牌",
+    "ui.token.rotateConfirm": "您确定要轮换此令牌吗？",
+    "ui.token.rotateSuccess": "令牌轮换成功",
+    "ui.token.rotateWarning": "警告：此操作将作废令牌，并生成新的令牌。使用旧令牌的客户端（如 Obsidian 插件）必须更新为新令牌才能继续同步。",
+    "ui.token.rotateAction": "确认轮换",
+    "ui.token.rotateResultTitle": "令牌轮换结果",
+    "ui.token.rotateResultDesc": "新的令牌已生成，旧令牌已失效。请更新您的客户端配置。",
+    "ui.token.rotateEffectHint": "执行此操作后，旧令牌即刻失效，并重新生成新的令牌。",
 
 
     // --- ui.user ---

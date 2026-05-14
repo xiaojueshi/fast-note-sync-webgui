@@ -1,4 +1,4 @@
-import { ShieldCheck, Smartphone, Monitor, RefreshCw, Trash2, Clock, Globe, ShieldAlert, Plus, Key, Copy, Check, Terminal, FileText, ChevronLeft, ChevronRight, History, Activity, MoreVertical, HelpCircle } from "lucide-react";
+import { ShieldCheck, Smartphone, Monitor, RefreshCw, RotateCw, Trash2, Clock, Globe, ShieldAlert, Plus, Key, Copy, Check, Terminal, FileText, ChevronLeft, ChevronRight, History, Activity, MoreVertical, HelpCircle } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from "@/components/ui/table";
@@ -21,21 +21,39 @@ interface TokenManagerProps {
   isCompact?: boolean;
   onCountChange?: (count: number) => void;
   onOnlineCountChange?: (count: number) => void;
+  onLoginCountChange?: (count: number) => void;
+  onManualCountChange?: (count: number) => void;
 }
 
 export interface TokenManagerHandle {
   openCreate: () => void;
   refresh: () => void;
+  setFilterType: (type: 0 | 1 | 2) => void;
 }
 
-export const TokenManager = forwardRef<TokenManagerHandle, TokenManagerProps>(
-  ({ isCompact, onCountChange, onOnlineCountChange }, ref) => {
-    const { t } = useTranslation();
-    const { tokens, isLoading, currentTokenID, handleListTokens, handleRevokeToken, handleCreateToken, handleUpdateToken, handleFetchTokenLogs } = useTokenHandle();
+const TokenManagerInner = (
+  { isCompact, onCountChange, onOnlineCountChange, onLoginCountChange, onManualCountChange }: TokenManagerProps,
+  ref: React.ForwardedRef<TokenManagerHandle>
+) => {
+  const { t } = useTranslation();
+  const { 
+    tokens, 
+    isLoading, 
+    currentTokenID, 
+    handleListTokens, 
+    handleRevokeToken, 
+    handleCreateToken, 
+    handleUpdateToken, 
+    handleFetchTokenLogs, 
+    handleRotateToken 
+  } = useTokenHandle();
+
+    const [filterType, setFilterType] = useState<0 | 1 | 2>(0); // 0: all, 1: login, 2: manual
 
     useImperativeHandle(ref, () => ({
       openCreate: () => setIsCreateOpen(true),
       refresh: () => handleListTokens(),
+      setFilterType: (type: 0 | 1 | 2) => setFilterType(type),
     }));
     const [revokingId, setRevokingId] = useState<number | null>(null);
 
@@ -63,6 +81,12 @@ export const TokenManager = forwardRef<TokenManagerHandle, TokenManagerProps>(
     const [generatedToken, setGeneratedToken] = useState<string | null>(null);
     const [isCopied, setIsCopied] = useState(false);
 
+    // Rotation dialog state
+    const [isRotateDialogOpen, setIsRotateDialogOpen] = useState(false);
+    const [rotateTargetId, setRotateTargetId] = useState<number | null>(null);
+    const [isRotating, setIsRotating] = useState(false);
+    const [isRotateMode, setIsRotateMode] = useState(false);
+
     useEffect(() => {
       handleListTokens();
     }, [handleListTokens]);
@@ -75,7 +99,15 @@ export const TokenManager = forwardRef<TokenManagerHandle, TokenManagerProps>(
         const online = tokens.filter(t => t.isWsOnline).length;
         onOnlineCountChange(online);
       }
-    }, [tokens, onCountChange, onOnlineCountChange]);
+      if (onLoginCountChange) {
+        const login = tokens.filter(t => t.issueType === 1).length;
+        onLoginCountChange(login);
+      }
+      if (onManualCountChange) {
+        const manual = tokens.filter(t => t.issueType === 2).length;
+        onManualCountChange(manual);
+      }
+    }, [tokens, onCountChange, onOnlineCountChange, onLoginCountChange, onManualCountChange]);
 
     const onRevoke = async (id: number) => {
       setRevokingId(id);
@@ -86,6 +118,33 @@ export const TokenManager = forwardRef<TokenManagerHandle, TokenManagerProps>(
         toast.error(t("ui.token.revokeFailed") || "Failed to revoke token");
       }
       setRevokingId(null);
+    };
+
+    const onRotate = (id: number) => {
+      setRotateTargetId(id);
+      setIsRotateDialogOpen(true);
+    };
+
+    const onRotateConfirm = async () => {
+      if (!rotateTargetId) return;
+      
+      setIsRotating(true);
+      try {
+        const newToken = await handleRotateToken(rotateTargetId);
+        if (newToken) {
+          setGeneratedToken(newToken);
+          setIsRotateMode(true);
+          setIsCreateOpen(true);
+          setIsEditMode(false); // Show the new token in the creation dialog
+          setIsRotateDialogOpen(false);
+          toast.success(t("ui.token.rotateSuccess"));
+        } else {
+          toast.error(t("ui.common.error"));
+        }
+      } finally {
+        setIsRotating(false);
+        setRotateTargetId(null);
+      }
     };
 
     const onOpenLogs = (id: number) => {
@@ -199,6 +258,7 @@ export const TokenManager = forwardRef<TokenManagerHandle, TokenManagerProps>(
     const closeCreateDialog = () => {
       setIsCreateOpen(false);
       setIsEditMode(false);
+      setIsRotateMode(false);
       setEditingTokenId(null);
       setGeneratedToken(null);
       setNewClientType("Other");
@@ -287,7 +347,8 @@ export const TokenManager = forwardRef<TokenManagerHandle, TokenManagerProps>(
     };
 
     return (
-      <div className={cn("space-y-6", isCompact ? "animate-none" : "animate-in fade-in slide-in-from-bottom-4 duration-500")}>
+      <>
+        <div className={cn("space-y-6", isCompact ? "animate-none" : "animate-in fade-in slide-in-from-bottom-4 duration-500")}>
         {!isCompact && (
           <div className="flex items-center justify-between">
             <div>
@@ -330,10 +391,12 @@ export const TokenManager = forwardRef<TokenManagerHandle, TokenManagerProps>(
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Key className="h-5 w-5 text-primary" />
-                {isEditMode ? (t("ui.token.editTitle") || "编辑令牌") : (t("ui.token.createTitle") || "创建新令牌")}
+                {isRotateMode ? (t("ui.token.rotateResultTitle") || "令牌轮换结果") : 
+                 isEditMode ? (t("ui.token.editTitle") || "编辑令牌") : (t("ui.token.createTitle") || "创建新令牌")}
               </DialogTitle>
               <DialogDescription>
-                {isEditMode ? (t("ui.token.editDesc") || "修改现有令牌的权限和有效期设置。") : (t("ui.token.createDesc") || "手动创建一个具有特定权限和有效期的 API 访问令牌。")}
+                {isRotateMode ? (t("ui.token.rotateResultDesc") || "新的令牌已生成，旧令牌已失效。请更新您的客户端配置。") :
+                 isEditMode ? (t("ui.token.editDesc") || "修改现有令牌的权限和有效期设置。") : (t("ui.token.createDesc") || "手动创建一个具有特定权限和有效期的 API 访问令牌。")}
               </DialogDescription>
             </DialogHeader>
 
@@ -594,15 +657,19 @@ export const TokenManager = forwardRef<TokenManagerHandle, TokenManagerProps>(
         </Dialog>
 
         <div className="grid gap-4">
-          {tokens.length === 0 && !isLoading ? (
-            <Card className="border-dashed border-2 bg-muted/30">
-              <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                <ShieldAlert className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
-                <p className="text-muted-foreground font-medium">{t("ui.token.noTokens") || "暂无活动令牌"}</p>
-              </CardContent>
-            </Card>
-          ) : (
-            tokens.map((token) => {
+          {(() => {
+            const filteredTokens = tokens.filter(t => filterType === 0 || t.issueType === filterType);
+            if (filteredTokens.length === 0 && !isLoading) {
+              return (
+                <Card className="border-dashed border-2 bg-muted/30">
+                  <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                    <ShieldAlert className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
+                    <p className="text-muted-foreground font-medium">{t("ui.token.noTokens") || "暂无活动令牌"}</p>
+                  </CardContent>
+                </Card>
+              );
+            }
+            return filteredTokens.map((token) => {
               const { protocols, funcs } = parseScope(token.scope);
               const expiry = getExpiryInfo(token.createdAt, token.expiredAt);
               const isSelf = token.id === currentTokenID;
@@ -665,10 +732,7 @@ export const TokenManager = forwardRef<TokenManagerHandle, TokenManagerProps>(
                               <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-normal bg-primary/5 text-primary/70 border-primary/10">
                                 ID: {token.id}
                               </Badge>
-                              <Badge variant="outline" className={cn(
-                                "text-[10px] h-4 px-1.5 font-normal flex items-center gap-1",
-                                token.issueType === 1 ? "bg-blue-500/5 text-blue-600/70 border-blue-500/10" : "bg-purple-500/5 text-purple-600/70 border-purple-500/10"
-                              )}>
+                              <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-normal flex items-center gap-1 bg-primary/5 text-primary/70 border-primary/10">
                                 {token.issueType === 1 ? <Globe className="h-3 w-3" /> : React.cloneElement(getClientIcon(token.clientType) as React.ReactElement<{ className?: string }>, { className: "h-3 w-3" })}
                                 {token.issueType === 1 ? t("ui.token.issueTypeLogin") : t("ui.token.issueTypeManual")}
                               </Badge>
@@ -720,6 +784,14 @@ export const TokenManager = forwardRef<TokenManagerHandle, TokenManagerProps>(
                                 {t("ui.common.edit")}
                               </DropdownMenuItem>
                             )}
+                            <DropdownMenuItem
+                              onClick={() => onRotate(token.id)}
+                              disabled={isSelf || token.issueType !== 2}
+                              className="gap-2 cursor-pointer"
+                            >
+                              <RotateCw className="h-4 w-4" />
+                              {t("ui.token.rotate")}
+                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={() => onRevoke(token.id)}
@@ -776,8 +848,8 @@ export const TokenManager = forwardRef<TokenManagerHandle, TokenManagerProps>(
                   </CardContent>
                 </Card>
               );
-            })
-          )}
+            });
+          })()}
         </div>
 
 
@@ -890,5 +962,58 @@ export const TokenManager = forwardRef<TokenManagerHandle, TokenManagerProps>(
           </DialogContent>
         </Dialog>
       </div>
+
+      {/* Rotate Token Warning Dialog */}
+      <Dialog open={isRotateDialogOpen} onOpenChange={setIsRotateDialogOpen}>
+        <DialogContent className="sm:max-w-[600px] rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <RotateCw className="h-5 w-5 text-primary" />
+              {t("ui.token.rotate")}
+            </DialogTitle>
+            <DialogDescription>
+              {t("ui.token.rotateConfirm")}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4 animate-in fade-in zoom-in-95 duration-300">
+            <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-xs flex gap-2">
+              <ShieldAlert className="h-4 w-4 shrink-0" />
+              <p className="leading-relaxed font-medium">
+                {t("ui.token.rotateWarning")}
+              </p>
+            </div>
+            
+            <div className="p-4 rounded-xl bg-muted/30 border border-dashed border-border flex items-center justify-center text-[11px] text-muted-foreground italic">
+              {t("ui.token.rotateEffectHint") || "执行此操作后，旧令牌的所有活跃会话将失效，需重新配置客户端"}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => setIsRotateDialogOpen(false)}
+              className="rounded-xl"
+            >
+              {t("ui.common.cancel")}
+            </Button>
+            <Button
+              onClick={onRotateConfirm}
+              disabled={isRotating}
+              className="rounded-xl px-8"
+            >
+              {isRotating ? (
+                <RotateCw className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <RotateCw className="h-4 w-4 mr-2" />
+              )}
+              {t("ui.token.rotateAction")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      </>
     );
-  });
+  };
+
+export const TokenManager = React.memo(forwardRef(TokenManagerInner));
