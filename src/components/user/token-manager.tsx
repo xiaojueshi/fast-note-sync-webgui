@@ -615,10 +615,10 @@ export const TokenManager = forwardRef<TokenManagerHandle, TokenManagerProps>(
                   {/* 顶部背景装饰 */}
                   <div className={cn(
                     "absolute top-0 left-0 right-0 h-1 transition-all duration-500",
-                    expiry.isExpired ? "bg-muted" : 
-                    isSelf ? "bg-gradient-to-r from-emerald-500 to-teal-500" : 
-                    token.issueType === 2 ? "bg-gradient-to-r from-blue-500 to-blue-600" :
-                    "bg-gradient-to-r from-primary/40 to-primary"
+                    expiry.isExpired ? "bg-muted" :
+                      isSelf ? "bg-gradient-to-r from-emerald-500 to-teal-500" :
+                        token.issueType === 2 ? "bg-gradient-to-r from-blue-500 to-blue-600" :
+                          "bg-gradient-to-r from-primary/40 to-primary"
                   )} />
 
                   <CardContent className="p-5 space-y-4">
@@ -665,10 +665,13 @@ export const TokenManager = forwardRef<TokenManagerHandle, TokenManagerProps>(
                               <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-normal bg-primary/5 text-primary/70 border-primary/10">
                                 ID: {token.id}
                               </Badge>
-                              {token.issueType === 1 ? <Globe className="h-3 w-3" /> : (
-                                React.cloneElement(getClientIcon(token.clientType) as React.ReactElement<{ className?: string }>, { className: "h-3 w-3" })
-                              )}
-                              {token.issueType === 1 ? t("ui.token.issueTypeLogin") : t("ui.token.issueTypeManual")}
+                              <Badge variant="outline" className={cn(
+                                "text-[10px] h-4 px-1.5 font-normal flex items-center gap-1",
+                                token.issueType === 1 ? "bg-blue-500/5 text-blue-600/70 border-blue-500/10" : "bg-purple-500/5 text-purple-600/70 border-purple-500/10"
+                              )}>
+                                {token.issueType === 1 ? <Globe className="h-3 w-3" /> : React.cloneElement(getClientIcon(token.clientType) as React.ReactElement<{ className?: string }>, { className: "h-3 w-3" })}
+                                {token.issueType === 1 ? t("ui.token.issueTypeLogin") : t("ui.token.issueTypeManual")}
+                              </Badge>
                             </span>
 
                             {/* 权限 Scope 详情 */}
@@ -740,6 +743,11 @@ export const TokenManager = forwardRef<TokenManagerHandle, TokenManagerProps>(
                         <span className="font-medium">
                           {token.lastUsedAt && !token.lastUsedAt.startsWith("0001") ? new Date(token.lastUsedAt).toLocaleString() : t("ui.common.never")}
                         </span>
+                        {token.lastUsedAt && !token.lastUsedAt.startsWith("0001") && (new Date().getTime() - new Date(token.lastUsedAt).getTime() < 5 * 60 * 1000) && (
+                          <span className="text-emerald-500  ml-1 animate-pulse">
+                            {t("ui.token.recentUse")}
+                          </span>
+                        )}
                       </div>
                       <Tooltip
                         content={

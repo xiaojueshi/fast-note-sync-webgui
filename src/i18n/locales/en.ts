@@ -154,6 +154,7 @@ export default {
     "ui.token.logStatus": "Status",
     "ui.token.logUa": "User Agent",
     "ui.token.lastUsedAt": "Last used",
+    "ui.token.recentUse": "Recently Used",
     "ui.token.warning": "Please copy and securely store this token. For security reasons, it will not be displayed again.",
     "ui.token.funcAll": "Unrestricted (all content)",
     "ui.token.unrestrictedFunc": "Content unrestricted",

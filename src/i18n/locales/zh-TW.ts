@@ -154,6 +154,7 @@ export default {
     "ui.token.logStatus": "狀態",
     "ui.token.logUa": "User Agent",
     "ui.token.lastUsedAt": "最後使用",
+    "ui.token.recentUse": "近期使用",
     "ui.token.warning": "請務必複製並妥善保存此權杖。出於安全原因，它將不會再次顯示。",
     "ui.token.funcAll": "不限制 (所有內容)",
     "ui.token.unrestrictedFunc": "內容不限制",
