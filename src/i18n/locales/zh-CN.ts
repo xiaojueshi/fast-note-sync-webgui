@@ -776,7 +776,7 @@ export default {
     "ui.support.sortTime": "全部时间",
     "ui.support.sortAmountHalfYear": "默认排序",
     "ui.support.rangeLastThreeMonths": "三个月以内",
-    "ui.support.rangeAllTime": "全部至今",
+    "ui.support.rangeAllTime": "至今全部",
     "ui.support.sort": "排序",
     "ui.support.buyMeACoffee": "请作者喝杯咖啡",
     "ui.support.wechatReward": "微信打赏支持",
