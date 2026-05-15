@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { addCacheBuster } from "@/lib/utils/cache-buster";
 import { buildApiHeaders } from "@/lib/utils/api-headers";
+import { useTranslation } from "react-i18next";
 import env from "@/env.ts";
 
 
@@ -20,13 +21,14 @@ export interface SupportPager {
 }
 
 export function useSupport() {
+    const { i18n } = useTranslation();
     const [supportList, setSupportList] = useState<SupportRecord[]>([]);
-    const [pager, setPager] = useState<SupportPager>({ page: 1, pageSize: 20, totalRows: 0 });
+    const [pager, setPager] = useState<SupportPager>({ page: 1, pageSize: 15, totalRows: 0 });
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const activeRequestIdRef = useRef<number>(0);
 
-    const fetchSupport = useCallback(async (page: number = 1, pageSize: number = 20, sortBy: string = "amount", sortOrder: string = "desc") => {
+    const fetchSupport = useCallback(async (page: number = 1, pageSize: number = 15, sortBy: string = "amount", sortOrder: string = "desc") => {
         const requestId = ++activeRequestIdRef.current;
 
         setIsLoading(true);
@@ -34,7 +36,7 @@ export function useSupport() {
         try {
             const pageStr = Math.floor(page).toString();
             const pageSizeStr = Math.floor(pageSize).toString();
-            let url = `${env.API_URL}/api/support?page=${pageStr}&pageSize=${pageSizeStr}`;
+            let url = `${env.API_URL}/api/support?page=${pageStr}&pageSize=${pageSizeStr}&lang=${i18n.language}`;
             if (sortBy) url += `&sortBy=${sortBy}`;
             if (sortOrder) url += `&sortOrder=${sortOrder}`;
 
@@ -79,7 +81,7 @@ export function useSupport() {
                 setIsLoading(false);
             }
         }
-    }, []);
+    }, [i18n.language]);
 
     useEffect(() => {
         return () => {

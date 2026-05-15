@@ -616,7 +616,7 @@ export function SystemSettings({ onBack, isDashboard = false, isAdmin = false }:
             {/* 右列：Tabs 设置区域 */}
             <div className="flex flex-col gap-4">
                 {isDashboard ? (
-                    <div className="rounded-xl border border-border bg-card p-4 custom-shadow">
+                    <div className="rounded-2xl border border-border/60 bg-card/30 backdrop-blur-sm p-4 custom-shadow">
                         <SupportList />
                     </div>
                 ) : config ? (

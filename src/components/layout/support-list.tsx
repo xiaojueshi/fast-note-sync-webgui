@@ -1,31 +1,46 @@
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator, } from "@/components/ui/dropdown-menu";
-import { Heart, RefreshCw, Loader2, MessageCircle, Smile, Coffee, QrCode, ExternalLink, SortDesc, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
+import { Heart, RefreshCw, Loader2, MessageCircle, Smile, Coffee, QrCode, ExternalLink, Trophy, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
 import { useSupport } from "@/components/api-handle/use-support";
 import { Tooltip } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 
-type SortKey = "time" | "amount";
+type SortKey = "time" | "amount" | "amount_3m";
 type SortOrder = "asc" | "desc";
 
 export function SupportList() {
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
     const { supportList, pager, isLoading, error, refresh } = useSupport()
     const [page, setPage] = useState(1);
-    const [pageSize] = useState(20);
-    const [sortKey, setSortKey] = useState<SortKey>("amount");
+    const [pageSize] = useState(15);
+    const [sortKey, setSortKey] = useState<SortKey>("amount_3m");
     const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
 
     useEffect(() => {
         refresh(page, pageSize, sortKey, sortOrder)
-    }, [refresh, page, pageSize, sortKey, sortOrder])
+    }, [refresh, page, pageSize, sortKey, sortOrder, i18n.language])
 
-    const handleSortChange = (key: SortKey, order: SortOrder) => {
+    const handleSortChange = (key: SortKey) => {
         setSortKey(key);
-        setSortOrder(order);
         setPage(1);
+    };
+
+    const getInitials = (name: string) => {
+        if (!name) return "?";
+        return name.charAt(0).toUpperCase();
+    };
+
+    const getAvatarColor = (name: string) => {
+        const colors = [
+            'bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500',
+            'bg-pink-500', 'bg-indigo-500', 'bg-teal-500', 'bg-orange-500', 'bg-cyan-500'
+        ];
+        let hash = 0;
+        for (let i = 0; i < name.length; i++) {
+            hash = name.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        return colors[Math.abs(hash) % colors.length];
     };
 
     if (isLoading && supportList.length === 0) {
@@ -78,70 +93,69 @@ export function SupportList() {
             </p>
 
             {/* Donation Methods */}
-            <div className="grid grid-cols-2 gap-2 pb-2">
-                <a
-                    href="https://ko-fi.com/haierkeys"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group relative flex flex-col items-center justify-center p-3 rounded-xl bg-orange-500/5 border border-orange-500/10 hover:bg-orange-500/10 hover:border-orange-500/30 transition-all cursor-pointer overflow-hidden"
-                >
-                    <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-40 transition-opacity">
-                        <ExternalLink className="h-2.5 w-2.5 text-orange-600" />
+            <div className="fns-support-cards-container">
+                {/* Ko-fi Card */}
+                <div className="fns-support-card">
+                    <div className="fns-support-card-header">
+                        <span className="fns-support-card-icon">☕</span>
+                        <span className="fns-support-card-title">{t("ui.support.buyMeACoffee")}</span>
                     </div>
-                    <img src="/static/images/kofi.png" alt="Ko-fi" className="h-16 w-auto object-contain mb-2 transition-transform group-hover:scale-105" />
-                    <div className="flex items-center gap-1.5 text-[11px] font-bold text-orange-600/80">
-                        <Coffee className="h-3.5 w-3.5" />
-                        {t("ui.support.buyMeACoffee")}
+                    <div className="fns-support-card-body">
+                        <a href="https://ko-fi.com/haierkeys" target="_blank" rel="noreferrer" className="fns-support-link">
+                            <img src="/static/images/kofi.png" className="fns-support-img-kofi" alt="Ko-fi" />
+                        </a>
                     </div>
-                </a>
+                </div>
 
-                <div className="group relative flex flex-col items-center justify-center p-3 rounded-xl bg-green-500/5 border border-green-500/10 hover:bg-green-500/10 hover:border-green-500/30 transition-all overflow-hidden">
-                    <Tooltip
-                        content={<img src="/static/images/wxds.png" alt="WeChat Pay" className="w-56 h-auto rounded" />}
-                        side="top"
-                        className="p-1.5 bg-white border-0 shadow-2xl"
-                    >
-                        <div className="flex flex-col items-center justify-center w-full h-full cursor-help">
-                            <img src="/static/images/wxds.png" alt="WeChat Pay" className="h-16 w-auto object-contain mb-2 rounded-sm opacity-90 group-hover:opacity-100 transition-all group-hover:scale-105" />
-                            <div className="flex items-center gap-1.5 text-[11px] font-bold text-green-600/80">
-                                <QrCode className="h-3.5 w-3.5" />
-                                {t("ui.support.wechatReward")}
-                            </div>
+                {/* WeChat Pay Card */}
+                <div className="fns-support-card">
+                    <div className="fns-support-card-header">
+                        <span className="fns-support-card-icon">🧧</span>
+                        <span className="fns-support-card-title">{t("ui.support.wechatReward")}</span>
+                    </div>
+                    <div className="fns-support-card-body">
+                        <div className="fns-wechat-qr-wrapper">
+                            <img src="/static/images/wxds.png" className="fns-support-img-wechat" alt="WeChat Pay" />
                         </div>
-                    </Tooltip>
+                    </div>
                 </div>
             </div>
 
             <div className="flex items-center justify-between pl-1 pt-1 pb-1">
                 <h3 className="text-xs font-bold text-muted-foreground/80 flex items-center gap-1.5">
-                    <MessageCircle className="h-3.5 w-3.5" />
+                    <Trophy className="h-3.5 w-3.5 text-amber-500/80 fill-amber-500/10" />
                     {t("ui.support.listTitle")}
+                    <span className="text-[10px] opacity-50 font-normal">
+                        {sortKey === 'amount_3m' ? `(${t("ui.support.rangeLastThreeMonths")})` : `(${t("ui.support.rangeAllTime")})`}
+                    </span>
                 </h3>
 
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px] gap-1 hover:bg-muted text-muted-foreground">
-                            <SortDesc className="h-3.5 w-3.5" />
-                            {sortKey === "amount" ? t("ui.support.sortDefault") : t("ui.support.sortTime")}
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="text-[11px] min-w-30">
-                        <DropdownMenuLabel className="text-[10px] opacity-50 px-2 py-1">{t("ui.support.sort")}</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                            className={`px-2 py-1.5 cursor-pointer ${sortKey === "amount" ? "bg-primary/10 text-primary font-bold" : ""}`}
-                            onClick={() => handleSortChange("amount", "desc")}
-                        >
-                            {t("ui.support.sortDefault")}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            className={`px-2 py-1.5 cursor-pointer ${sortKey === "time" ? "bg-primary/10 text-primary font-bold" : ""}`}
-                            onClick={() => handleSortChange("time", "desc")}
-                        >
-                            {t("ui.support.sortTime")}
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                <div className="flex items-center bg-secondary/80 rounded-lg p-0.5 border border-border/50 shadow-inner">
+                    <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleSortChange("amount_3m")}
+                        className={`h-5 min-h-0 px-2 text-[10px] rounded-md transition-all ${sortKey === "amount_3m" ? "bg-card text-primary shadow-sm font-bold" : "text-muted-foreground hover:text-foreground"}`}
+                    >
+                        {t("ui.support.sortAmountHalfYear")}
+                    </Button>
+                    <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleSortChange("amount")}
+                        className={`h-5 min-h-0 px-2 text-[10px] rounded-md transition-all ${sortKey === "amount" ? "bg-card text-primary shadow-sm font-bold" : "text-muted-foreground hover:text-foreground"}`}
+                    >
+                        {t("ui.support.sortDefault")}
+                    </Button>
+                    <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleSortChange("time")}
+                        className={`h-5 min-h-0 px-2 text-[10px] rounded-md transition-all ${sortKey === "time" ? "bg-card text-primary shadow-sm font-bold" : "text-muted-foreground hover:text-foreground"}`}
+                    >
+                        {t("ui.support.sortTime")}
+                    </Button>
+                </div>
             </div>
 
             <div className="flex-1 overflow-y-auto border border-border/40 rounded-lg bg-card/10 custom-scrollbar relative min-h-30">
@@ -151,12 +165,12 @@ export function SupportList() {
                         <span className="text-xs italic">{t("ui.support.noData")}</span>
                     </div>
                 ) : (
-                    <div className="divide-y divide-border/20">
+                    <div className="divide-y divide-border/25">
                         {supportList.map((record, index) => {
                             const tooltipContent = `${record.name || "Anonymous"}: ${record.message || record.item}`;
 
                             return (
-                                <div key={index} className="w-full block">
+                                <div key={index} className="w-full">
                                     <Tooltip
                                         side="left"
                                         delay={300}
@@ -164,23 +178,34 @@ export function SupportList() {
                                         className="max-w-75 whitespace-normal"
                                         triggerClassName="w-full"
                                     >
-                                        <div className="grid grid-cols-[80px_1fr_80px] gap-2 px-3 py-2 items-center hover:bg-primary/5 transition-colors cursor-default text-[11px] w-full">
-                                            <div className="text-muted-foreground font-mono tabular-nums whitespace-nowrap overflow-hidden text-ellipsis opacity-70">
-                                                {(record.time || "").split(' ')[0] || "N/A"}
+                                        <div className="group grid grid-cols-[60px_1fr_100px] gap-3 px-3 py-2 items-center hover:bg-muted/60 transition-all cursor-default rounded-lg w-full">
+                                            {/* Date */}
+                                            <div className="text-[10px] text-muted-foreground font-mono tabular-nums opacity-50 shrink-0">
+                                                {(record.time || "").split(' ')[0].substring(2) || "N/A"}
                                             </div>
-                                            <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
-                                                <Smile className="h-3 w-3 text-primary/60 shrink-0" />
-                                                <span className="font-medium shrink-0 max-w-20 truncate">
-                                                    {record.name || "Anonymous"}
-                                                </span>
-                                                {record.message && (
-                                                    <span className="text-muted-foreground truncate text-[10px] opacity-70 border-l border-border/50 pl-1.5">
-                                                        {record.message}
+                                            
+                                            {/* Name and Message */}
+                                            <div className="flex items-center gap-2 min-w-0 overflow-hidden">
+                                                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] text-white shrink-0 shadow-sm ${getAvatarColor(record.name)}`}>
+                                                    {getInitials(record.name)}
+                                                </div>
+                                                <div className="flex items-center gap-2 min-w-0 overflow-hidden">
+                                                    <span className="text-[11px] font-semibold text-foreground/90 shrink-0">
+                                                        {record.name || "Anonymous"}
                                                     </span>
-                                                )}
+                                                    {record.message && (
+                                                        <span className="text-[11px] text-foreground/70 truncate opacity-80 group-hover:opacity-100 transition-opacity border-l border-border/50 pl-2">
+                                                            {record.message}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <div className="text-right font-bold text-primary tabular-nums">
-                                                {record.amount} <span className="text-[9px] opacity-70 font-normal ml-0.5">{record.unit}</span>
+
+                                            {/* Amount */}
+                                            <div className="justify-self-end shrink-0">
+                                                <div className="inline-flex items-center px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                                                    {record.amount} <span className="text-[9px] font-normal ml-0.5 opacity-80">{record.unit}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </Tooltip>
