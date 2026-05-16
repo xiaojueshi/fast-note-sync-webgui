@@ -36,6 +36,7 @@ interface SystemConfig {
     historySaveDelay: string
     adminUid: number
     pullSource: string
+    pullReleaseChannel: string
 }
 
 interface NgrokConfig {
@@ -698,6 +699,26 @@ export function SystemSettings({ onBack, isDashboard = false, isAdmin = false }:
                                             </SelectContent>
                                         </Select>
                                         <p className="text-xs text-muted-foreground">{t("ui.settings.pullSourceDesc")}</p>
+                                    </div>
+
+                                    <div className="space-y-3 pt-1">
+                                        <div className="flex items-center gap-3">
+                                            <GitBranch className="h-5 w-5 text-muted-foreground" />
+                                            <span className="text-sm font-medium">{t("ui.settings.pullReleaseChannel")}</span>
+                                        </div>
+                                        <Select
+                                            value={config.pullReleaseChannel || "stable"}
+                                            onValueChange={(value) => updateConfig({ pullReleaseChannel: value })}
+                                        >
+                                            <SelectTrigger className="rounded-xl">
+                                                <SelectValue placeholder={t("ui.settings.pullReleaseChannel")} />
+                                            </SelectTrigger>
+                                            <SelectContent className="rounded-xl">
+                                                <SelectItem value="stable">{t("ui.settings.pullReleaseChannel.stable")}</SelectItem>
+                                                <SelectItem value="beta">{t("ui.settings.pullReleaseChannel.beta")}</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <p className="text-xs text-muted-foreground">{t("ui.settings.pullReleaseChannelDesc")}</p>
                                     </div>
                                     <div className="border-t border-border" />
                                     <div className="space-y-3">
