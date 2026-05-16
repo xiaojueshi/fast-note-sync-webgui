@@ -1,6 +1,6 @@
-import { Heart, RefreshCw, Loader2, MessageCircle, Smile, Coffee, QrCode, ExternalLink, Trophy, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
+import { Heart, RefreshCw, Loader2, MessageCircle, Trophy, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
 import { useSupport } from "@/components/api-handle/use-support";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { Tooltip } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
@@ -15,7 +15,7 @@ export function SupportList() {
     const [page, setPage] = useState(1);
     const [pageSize] = useState(15);
     const [sortKey, setSortKey] = useState<SortKey>("amount_3m");
-    const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
+    const [sortOrder] = useState<SortOrder>("desc");
 
     useEffect(() => {
         refresh(page, pageSize, sortKey, sortOrder)
