@@ -24,6 +24,7 @@ export interface WSClientInfo {
     remoteAddr: string;
     startTime: string;
     traceId: string;
+    tokenId: number;
 }
 
 export function useWSClientInfo() {
@@ -75,6 +76,34 @@ export function useWSClientInfo() {
         }
     }, [token]);
 
+    const kickClient = useCallback(async (traceId: string) => {
+        if (!token) return;
+        try {
+            const response = await fetch(addCacheBuster(env.API_URL + "/api/admin/ws_client/" + traceId), {
+                method: "DELETE",
+                headers: buildApiHeaders({
+                    token,
+                    includeDomain: false,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Network response was not ok");
+            }
+
+            const res = await response.json();
+            if (res.code === 1 || res.status === true) {
+                fetchWSClientInfo();
+                return true;
+            } else {
+                throw new Error(res.message || "Failed to kick client");
+            }
+        } catch (err: unknown) {
+            console.error("WS client kick error:", err);
+            throw err;
+        }
+    }, [token, fetchWSClientInfo]);
+
     useEffect(() => {
         const isActive = { current: true };
         fetchWSClientInfo(isActive);
@@ -87,6 +116,7 @@ export function useWSClientInfo() {
         clients,
         isLoading,
         error,
-        refresh: fetchWSClientInfo
+        refresh: fetchWSClientInfo,
+        kickClient
     };
 }

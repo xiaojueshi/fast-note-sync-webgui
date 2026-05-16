@@ -526,6 +526,9 @@ export default {
     "ui.system.wsRemoteAddr": "地址",
     "ui.system.wsStartTime": "连接时间",
     "ui.system.wsTraceId": "追踪 ID",
+    "ui.system.wsTokenId": "令牌 ID",
+    "ui.system.wsKick": "踢出",
+    "ui.system.wsKickConfirm": "确定要踢出该客户端吗？连接将立即断开。",
     "ui.system.wsNoClients": "暂无在线客户端",
 
     // --- ui.storage ---

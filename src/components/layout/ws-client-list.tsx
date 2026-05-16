@@ -1,13 +1,36 @@
-import { RefreshCw, Loader2, Laptop, Smartphone, Monitor } from "lucide-react";
+import { RefreshCw, Loader2, Laptop, Smartphone, Monitor, UserMinus, Key } from "lucide-react";
 import { useWSClientInfo } from "@/components/api-handle/use-ws-clients";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { useAppStore } from "@/stores/app-store";
+import { useState } from "react";
+import { toast } from "@/components/common/Toast";
 
 
 export function WSClientList() {
     const { t } = useTranslation();
-    const { clients, isLoading, refresh } = useWSClientInfo();
+    const { clients, isLoading, refresh, kickClient } = useWSClientInfo();
+    const setModule = useAppStore(state => state.setModule);
+    const setHighlightTokenId = useAppStore(state => state.setHighlightTokenId);
+
+    const [kickingId, setKickingId] = useState<string | null>(null);
+    const [isKicking, setIsKicking] = useState(false);
+
+    const handleKick = async (traceId: string) => {
+        setIsKicking(true);
+        try {
+            await kickClient(traceId);
+            toast.success(t("ui.common.success"));
+        } catch (err: unknown) {
+            const error = err as Error;
+            toast.error(error.message || t("ui.common.error"));
+        } finally {
+            setIsKicking(false);
+            setKickingId(null);
+        }
+    };
 
     return (
         <div className="rounded-xl border border-border bg-card p-6 space-y-4 custom-shadow">
@@ -69,16 +92,39 @@ export function WSClientList() {
                                             </div>
                                         </div>
                                     </div>
-                                    <Badge variant="secondary" className="text-[10px] font-medium h-5">
-                                        {client.clientType}
-                                    </Badge>
+                                    <div className="flex items-center gap-2">
+                                        <Badge variant="secondary" className="text-[10px] font-medium h-5">
+                                            {client.clientType}
+                                        </Badge>
+                                    </div>
                                 </div>
                                 <div className="flex items-center justify-between pt-1 border-t border-border/10">
                                     <div className="text-[10px] text-muted-foreground">
                                         {t("ui.system.wsStartTime")}: {new Date(client.startTime).toLocaleString()}
                                     </div>
-                                    <div className="text-[10px] text-muted-foreground font-mono opacity-40 group-hover:opacity-100 transition-opacity">
-                                        {t("ui.auth.userUid", { uid: client.uid })}
+                                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-mono opacity-40 group-hover:opacity-100 transition-opacity">
+                                        <span>{t("ui.auth.userUid", { uid: client.uid })}</span>
+                                        {client.tokenId > 0 && (
+                                            <span 
+                                                className="text-primary/70 flex items-center gap-1 border-l border-border/20 pl-2 cursor-pointer hover:underline hover:text-primary transition-colors"
+                                                onClick={() => {
+                                                    setHighlightTokenId(client.tokenId);
+                                                    setModule('vaults');
+                                                }}
+                                            >
+                                                <Key className="h-2.5 w-2.5" />
+                                                {t("ui.system.wsTokenId")}: {client.tokenId}
+                                            </span>
+                                        )}
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => setKickingId(client.traceId)}
+                                            className="h-5 w-5 !min-h-0 rounded-md text-destructive/40 hover:text-destructive hover:bg-destructive/10 ml-1.5 transition-all border border-transparent hover:border-destructive/20 active:scale-95 shadow-none hover:shadow-sm"
+                                            title={t("ui.system.wsKick")}
+                                        >
+                                            <UserMinus className="h-2.5 w-2.5" />
+                                        </Button>
                                     </div>
                                 </div>
                             </div>
@@ -86,6 +132,28 @@ export function WSClientList() {
                     </div>
                 )}
             </div>
+
+            <AlertDialog open={!!kickingId} onOpenChange={(open) => !open && setKickingId(null)}>
+                <AlertDialogContent className="rounded-2xl">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>{t("ui.system.wsKick")}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {t("ui.system.wsKickConfirm")}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel className="rounded-xl">{t("ui.common.cancel")}</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => kickingId && handleKick(kickingId)}
+                            className="rounded-xl bg-destructive hover:bg-destructive/90"
+                            disabled={isKicking}
+                        >
+                            {isKicking ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                            {t("ui.common.confirm")}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

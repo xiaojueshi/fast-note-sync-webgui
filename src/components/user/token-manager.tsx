@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { useAppStore } from "@/stores/app-store";
 import { cn } from "@/lib/utils";
 import React from "react";
 
@@ -61,7 +62,26 @@ const TokenManagerInner = (
     handleRotateToken 
   } = useTokenHandle();
 
-    const [filterType, setFilterType] = useState<0 | 1 | 2>(0); // 0: all, 1: login, 2: manual
+  const highlightTokenId = useAppStore(state => state.highlightTokenId);
+  const setHighlightTokenId = useAppStore(state => state.setHighlightTokenId);
+
+  useEffect(() => {
+    if (highlightTokenId && tokens.length > 0) {
+      // 延迟一点确保渲染完成
+      const timer = setTimeout(() => {
+        const element = document.getElementById(`token-card-${highlightTokenId}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // 5秒后清除高亮状态
+          const clearTimer = setTimeout(() => setHighlightTokenId(null), 5000);
+          return () => clearTimeout(clearTimer);
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [highlightTokenId, tokens, setHighlightTokenId]);
+
+  const [filterType, setFilterType] = useState<0 | 1 | 2>(0); // 0: all, 1: login, 2: manual
 
     useImperativeHandle(ref, () => ({
       openCreate: () => setIsCreateOpen(true),
@@ -709,10 +729,16 @@ const TokenManagerInner = (
               const isSelf = token.id === currentTokenID;
 
               return (
-                <Card key={token.id} className={cn(
-                  "group relative overflow-hidden transition-all duration-300 border-border/40 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5",
-                  expiry.isExpired ? "opacity-60 bg-muted/20" : "bg-card/50"
-                )}>
+                <Card 
+                  id={`token-card-${token.id}`}
+                  key={token.id} 
+                  className={cn(
+                    "group relative overflow-hidden transition-all duration-500 border-border/40 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5",
+                    expiry.isExpired ? "opacity-60 bg-muted/20" : "bg-card/50",
+                    highlightTokenId === token.id && "shadow-[0_0_35px_-5px_rgba(245,158,11,0.4)] border-amber-500/30 bg-amber-500/[0.01] z-10"
+                  )}
+                  onClick={() => highlightTokenId === token.id && setHighlightTokenId(null)}
+                >
                   {/* 顶部背景装饰 */}
                   <div className={cn(
                     "absolute top-0 left-0 right-0 h-1 transition-all duration-500",

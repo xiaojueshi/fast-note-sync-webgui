@@ -30,6 +30,8 @@ interface AppState {
   trashType: 'notes' | 'files';
   /** 版本信息 */
   versionInfo: VersionInfo | null;
+  /** 需要高亮的令牌 ID */
+  highlightTokenId: number | null;
 
   // Actions
   /** 设置当前模块 */
@@ -44,6 +46,8 @@ interface AppState {
   toggleUserMenu: () => void;
   /** 设置用户菜单状态 */
   setUserMenuOpen: (open: boolean) => void;
+  /** 设置需要高亮的令牌 ID */
+  setHighlightTokenId: (tokenId: number | null) => void;
   /** 重置应用状态（用于登出） */
   resetState: () => void;
 }
@@ -55,6 +59,7 @@ const defaultState = {
   userMenuOpen: false,
   trashType: 'notes' as 'notes' | 'files',
   versionInfo: null,
+  highlightTokenId: null,
 };
 
 /**
@@ -83,6 +88,8 @@ export const useAppStore = create<AppState>()(
       setUserMenuOpen: (open) => set({ userMenuOpen: open }),
 
       setVersionInfo: (info) => set({ versionInfo: info }),
+
+      setHighlightTokenId: (tokenId) => set({ highlightTokenId: tokenId }),
 
       resetState: () => {
         // 重置内存状态
