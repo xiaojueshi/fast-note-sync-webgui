@@ -488,6 +488,15 @@ export default {
     "ui.obsidian.remarkHelp": "給當前授權一個備註名稱，方便區分不同的設備或插件連接。",
     "ui.obsidian.limitToCurrentVault": "僅限訪問當前筆記庫",
     "ui.obsidian.limitVaultDesc": "限制此授權僅能訪問 “{{vaultName}}” 筆記庫，安全性更高。",
+    "ui.obsidian.methodOne": "方式一：一鍵自動匯入",
+    "ui.obsidian.oneClickSSOPrompt": "無需手動複製，一鍵自動拉起並配置 Obsidian 插件",
+    "ui.obsidian.methodTwo": "方式二：手動複製 JSON 資訊",
+    "ui.obsidian.authSuccess": "已成功生成授權權杖！",
+    "ui.obsidian.importPrompt": "為了將筆記同步到該用戶端，請選擇以下任一方式完成配置：",
+    "ui.obsidian.copyToken": "複製權杖",
+    "ui.obsidian.copyTokenSuccess": "權杖已複製到剪貼簿",
+
+
 
     // --- ui.system ---
     "ui.system.serviceInfo": "服務信息",

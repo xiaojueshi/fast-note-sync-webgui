@@ -488,6 +488,15 @@ export default {
     "ui.obsidian.remarkHelp": "この接続を識別しやすくするために、認可名を入力してください。",
     "ui.obsidian.limitToCurrentVault": "現在のノートライブラリのみに制限",
     "ui.obsidian.limitVaultDesc": "セキュリティ向上のため、この認可によるアクセスを「{{vaultName}}」ノートライブラリのみに制限します。",
+    "ui.obsidian.methodOne": "方法1：ワンクリック自動インポート",
+    "ui.obsidian.oneClickSSOPrompt": "手動コピーは不要。クリックするだけで、Obsidianプラグインを起動して自動設定します。",
+    "ui.obsidian.methodTwo": "方法2：JSON設定を手動コピー",
+    "ui.obsidian.authSuccess": "認証トークンが正常に生成されました！",
+    "ui.obsidian.importPrompt": "このクライアントにノートを同期するには、以下のいずれかの方法を選択して設定を完了してください：",
+    "ui.obsidian.copyToken": "トークンをコピー",
+    "ui.obsidian.copyTokenSuccess": "トークンがクリップボードにコピーされました",
+
+
 
     // --- ui.system ---
     "ui.system.serviceInfo": "サービス情報",

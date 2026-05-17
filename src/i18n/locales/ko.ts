@@ -488,6 +488,15 @@ export default {
     "ui.obsidian.remarkHelp": "디바이스나 플러그인 연결을 쉽게 구분할 수 있도록 릴리스 노트를 입력하세요.",
     "ui.obsidian.limitToCurrentVault": "현재 노트 저장소만 접근 허용",
     "ui.obsidian.limitVaultDesc": "보안 향상을 위해 이 인증의 접근 권한을 \"{{vaultName}}\" 노트 저장소로만 제한합니다.",
+    "ui.obsidian.methodOne": "방법 1: 원클릭 자동 가져오기",
+    "ui.obsidian.oneClickSSOPrompt": "수동 복사 불필요. 클릭 한 번으로 Obsidian 플러그인을 실행하고 자동으로 설정합니다.",
+    "ui.obsidian.methodTwo": "방법 2: JSON 설정 수동 복사",
+    "ui.obsidian.authSuccess": "인증 토큰이 성공적으로 생성되었습니다!",
+    "ui.obsidian.importPrompt": "이 클라이언트에 노트를 동기화하려면 다음 방법 중 하나를 선택하여 설정을 완료하십시오:",
+    "ui.obsidian.copyToken": "토큰 복사",
+    "ui.obsidian.copyTokenSuccess": "토큰이 클립보드에 복사되었습니다",
+
+
 
     // --- ui.system ---
     "ui.system.serviceInfo": "서비스 정보",

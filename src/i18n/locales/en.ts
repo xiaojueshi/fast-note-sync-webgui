@@ -488,6 +488,15 @@ export default {
     "ui.obsidian.remarkHelp": "Give a remark name for this authorization to easily identify different devices or plugins.",
     "ui.obsidian.limitToCurrentVault": "Limit to current vault",
     "ui.obsidian.limitVaultDesc": "Restrict this authorization to access the \"{{vaultName}}\" vault only for enhanced security.",
+    "ui.obsidian.methodOne": "Method 1: One-Click Auto Import",
+    "ui.obsidian.oneClickSSOPrompt": "No manual copying needed. Click to launch and configure the Obsidian plugin instantly.",
+    "ui.obsidian.methodTwo": "Method 2: Manually Copy JSON Config",
+    "ui.obsidian.authSuccess": "Authorization Token Generated Successfully!",
+    "ui.obsidian.importPrompt": "To sync notes to this client, please select one of the following methods to complete configuration:",
+    "ui.obsidian.copyToken": "Copy Token",
+    "ui.obsidian.copyTokenSuccess": "Token copied to clipboard",
+
+
 
     // --- ui.system ---
     "ui.system.serviceInfo": "Service Information",

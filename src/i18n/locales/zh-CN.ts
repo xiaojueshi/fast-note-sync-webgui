@@ -230,7 +230,7 @@ export default {
     "ui.vault.attachmentCount": "附件",
     "ui.vault.totalSize": "总容量: {{size}}",
     "ui.vault.authTokenConfig": "授权 Obsidian",
-    "ui.vault.copyConfig": "复制连接配置",
+    "ui.vault.copyConfig": "复制授权配置",
     "ui.vault.copyConfigSuccess": "配置已复制到剪贴板",
     "ui.vault.copyConfigError": "复制失败，请手动选择复制",
     "ui.vault.oneClickImport": "一键授权 Obsidian",
@@ -472,7 +472,7 @@ export default {
     "ui.obsidian.oneClickImport": "一键授权到 Obsidian",
     "ui.obsidian.copyConfigSuccess": "授权信息已复制, 请返回 Obsidian 插件粘贴配置",
     "ui.obsidian.copyConfigError": "非 HTTPS 页面，无法使用剪贴板功能，请手动复制授权配置",
-    "ui.obsidian.tokenRequired": "需要授权令牌",
+    "ui.obsidian.tokenRequired": "自动生成授权令牌",
     "ui.obsidian.tokenPrompt": "点击下方按钮生成一个专用的授权令牌，用于在 Obsidian 中进行同步, 服务端不会保存令牌。",
     "ui.obsidian.generateToken": "生成授权令牌",
     "ui.obsidian.generateTokenDesc": "为 Obsidian 插件生成一个具有完整同步权限 (REST + WebSocket) 的专用授权令牌。",
@@ -488,6 +488,15 @@ export default {
     "ui.obsidian.remarkHelp": "给当前授权一个备注名称，方便区分不同的设备或插件连接。",
     "ui.obsidian.limitToCurrentVault": "仅限访问当前笔记库",
     "ui.obsidian.limitVaultDesc": "限制此授权仅能访问 “{{vaultName}}” 笔记库，安全性更高。",
+    "ui.obsidian.methodOne": "方式一：一键自动导入",
+    "ui.obsidian.oneClickSSOPrompt": "无需手动复制，一键自动拉起并配置 Obsidian 插件",
+    "ui.obsidian.methodTwo": "方式二：手动复制 JSON 信息",
+    "ui.obsidian.authSuccess": "已成功生成授权令牌！",
+    "ui.obsidian.importPrompt": "为了将笔记同步到该客户端，请选择以下任一方式完成配置：",
+    "ui.obsidian.copyToken": "复制令牌",
+    "ui.obsidian.copyTokenSuccess": "令牌已复制到剪贴板",
+
+
 
     // --- ui.system ---
     "ui.system.serviceInfo": "服务信息",
