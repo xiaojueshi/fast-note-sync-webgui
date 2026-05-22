@@ -288,6 +288,8 @@ export default {
     "ui.note.loadingEditor": "Loading editor...",
     "ui.note.unsavedContentWithoutTitle": "Content not saved because title is empty.",
     "ui.note.wikiLinkNotFound": "Note \"{{target}}\" not found",
+    "ui.note.properties": "Properties",
+    "ui.note.noProperties": "No properties",
 
     // --- ui.history ---
     "ui.history.title": "Note history",

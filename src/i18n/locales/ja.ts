@@ -288,6 +288,8 @@ export default {
     "ui.note.loadingEditor": "エディタを読み込んでいます...",
     "ui.note.unsavedContentWithoutTitle": "タイトルが空のため、内容は保存されませんでした。",
     "ui.note.wikiLinkNotFound": "ノート \"{{target}}\" が見つかりません",
+    "ui.note.properties": "プロパティ",
+    "ui.note.noProperties": "プロパティなし",
 
     // --- ui.history ---
     "ui.history.title": "ノート履歴",

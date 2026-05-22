@@ -288,6 +288,8 @@ export default {
     "ui.note.loadingEditor": "편집기 로딩 중...",
     "ui.note.unsavedContentWithoutTitle": "제목이 비어 있어 내용이 저장되지 않았습니다.",
     "ui.note.wikiLinkNotFound": "노트 \"{{target}}\" 을(를) 찾을 수 없습니다",
+    "ui.note.properties": "속성",
+    "ui.note.noProperties": "속성 없음",
 
     // --- ui.history ---
     "ui.history.title": "노트 기록",

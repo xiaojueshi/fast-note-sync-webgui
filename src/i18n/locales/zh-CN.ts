@@ -288,6 +288,8 @@ export default {
     "ui.note.loadingEditor": "加载编辑器...",
     "ui.note.unsavedContentWithoutTitle": "内容未保存，因为标题为空。",
     "ui.note.wikiLinkNotFound": "未找到笔记 \"{{target}}\"",
+    "ui.note.properties": "属性",
+    "ui.note.noProperties": "暂无属性",
 
     // --- ui.history ---
     "ui.history.title": "笔记历史",

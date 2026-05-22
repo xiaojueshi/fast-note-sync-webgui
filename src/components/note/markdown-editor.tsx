@@ -15,6 +15,8 @@ import remarkGfm from "remark-gfm";
 import {
     AlertTriangle, Bug, Check, CheckCircle2, ClipboardList, Flame,
     HelpCircle, Info, List, Pencil, Quote, X, Zap, type LucideIcon,
+    ChevronDown, ChevronRight, Type, Tag, Hash, Binary, CheckSquare,
+    Calendar, Clock, Link2, ExternalLink,
 } from "lucide-react";
 
 import { toast } from "@/components/common/Toast";
@@ -189,6 +191,302 @@ mark {
 `;
 
 // ─── 工具函数 ───────────────────────────────────────────────
+
+/**
+ * Parsed Frontmatter result
+ * properties: The parsed properties key-value map
+ * contentBody: The remaining content with frontmatter stripped
+ * 
+ * Frontmatter 解析结果
+ * properties: 解析后的属性键值对映射
+ * contentBody: 剥离了 Frontmatter 后的正文内容
+ */
+export interface ParsedFrontmatter {
+    properties: Record<string, any>;
+    contentBody: string;
+}
+
+/**
+ * Helper to parse a single value from YAML line (boolean, number, string)
+ * 
+ * 辅助函数：解析 YAML 值的类型（布尔、数字、字符串）
+ */
+function parseSingleValue(val: string): any {
+    val = val.trim();
+    // Strip surrounding quotes
+    if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+        return val.slice(1, -1);
+    }
+    const lower = val.toLowerCase();
+    if (lower === "true") return true;
+    if (lower === "false") return false;
+    // Basic number check
+    if (/^-?\d+(\.\d+)?$/.test(val)) return Number(val);
+    return val;
+}
+
+/**
+ * Parse Obsidian style Frontmatter (YAML-like) from markdown content
+ * English: Parses YAML frontmatter enclosed in '---' from markdown content, returning the properties and remaining body.
+ * 简体中文: 解析 Markdown 中被 '---' 包裹的 YAML 属性头部，返回解析后的属性对象和剥离了头部的正文内容。
+ */
+export function parseFrontmatter(content: string): ParsedFrontmatter {
+    if (!content) {
+        return { properties: {}, contentBody: "" };
+    }
+
+    const lines = content.split(/\r?\n/);
+    // Frontmatter must start with '---' on the first line
+    if (lines.length === 0 || lines[0].trim() !== "---") {
+        return { properties: {}, contentBody: content };
+    }
+
+    let endIdx = -1;
+    for (let i = 1; i < lines.length; i++) {
+        if (lines[i].trim() === "---") {
+            endIdx = i;
+            break;
+        }
+    }
+
+    // No closing '---' means invalid frontmatter
+    if (endIdx === -1) {
+        return { properties: {}, contentBody: content };
+    }
+
+    const frontmatterLines = lines.slice(1, endIdx);
+    const contentBody = lines.slice(endIdx + 1).join("\n");
+
+    const properties: Record<string, any> = {};
+    let currentKey: string | null = null;
+
+    for (const line of frontmatterLines) {
+        const trimmedLine = line.trim();
+        // Skip empty or comment lines
+        if (!trimmedLine || trimmedLine.startsWith("#")) {
+            continue;
+        }
+
+        // Check if it is a list item belonging to the current key (e.g., "  - item")
+        const listMatch = line.match(/^\s*-\s+(.*)$/);
+        if (listMatch && currentKey) {
+            const itemVal = parseSingleValue(listMatch[1]);
+            if (!Array.isArray(properties[currentKey])) {
+                properties[currentKey] = [];
+            }
+            properties[currentKey].push(itemVal);
+            continue;
+        }
+
+        // Check if it is a key-value pair (e.g., "key: value")
+        const colonIdx = line.indexOf(":");
+        if (colonIdx > 0) {
+            const rawKey = line.slice(0, colonIdx).trim();
+            const rawVal = line.slice(colonIdx + 1).trim();
+
+            if (!rawKey) continue;
+
+            currentKey = rawKey;
+
+            if (!rawVal) {
+                properties[currentKey] = "";
+                continue;
+            }
+
+            // Check if it's an inline array (e.g., "[item1, item2]")
+            if (rawVal.startsWith("[") && rawVal.endsWith("]")) {
+                const inner = rawVal.slice(1, -1).trim();
+                if (!inner) {
+                    properties[currentKey] = [];
+                } else {
+                    properties[currentKey] = inner.split(",").map(x => parseSingleValue(x));
+                }
+            } else {
+                properties[currentKey] = parseSingleValue(rawVal);
+            }
+        }
+    }
+
+    return { properties, contentBody };
+}
+
+/**
+ * Maps property types to their respective Lucide Icons
+ * 
+ * 将属性类型映射到对应的 Lucide 图标
+ */
+function getPropertyIcon(type: string): LucideIcon {
+    switch (type) {
+        case "tags":
+            return Tag;
+        case "aliases":
+            return Hash;
+        case "list":
+            return List;
+        case "number":
+            return Binary;
+        case "checkbox":
+            return CheckSquare;
+        case "date":
+            return Calendar;
+        case "datetime":
+            return Clock;
+        case "link":
+            return Link2;
+        default:
+            return Type;
+    }
+}
+
+/**
+ * Automatically detects the type of Obsidian Frontmatter property based on its key and value
+ * 
+ * 根据属性键（key）和值（value）自动识别 Obsidian Frontmatter 属性的类型
+ */
+function detectPropertyType(key: string, value: any): string {
+    const lowerKey = key.toLowerCase();
+    if (lowerKey === "tags" || lowerKey === "tag") {
+        return "tags";
+    }
+    if (lowerKey === "aliases" || lowerKey === "alias" || lowerKey === "cssclasses") {
+        return "aliases";
+    }
+    if (typeof value === "boolean") {
+        return "checkbox";
+    }
+    if (typeof value === "number") {
+        return "number";
+    }
+    if (Array.isArray(value)) {
+        return "list";
+    }
+    if (typeof value === "string") {
+        const trimmed = value.trim();
+        // Match YYYY-MM-DD
+        if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+            return "date";
+        }
+        // Match ISO datetime YYYY-MM-DDTHH:mm...
+        if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(trimmed)) {
+            return "datetime";
+        }
+        // Match URL links
+        if (/^(https?:\/\/|mailto:)/i.test(trimmed)) {
+            return "link";
+        }
+        return "text";
+    }
+    return "text";
+}
+
+/**
+ * Renders the values of frontmatter properties with rich, modern styling matching their types
+ * 
+ * 根据 Frontmatter 属性的不同类型，渲染对应具有精美现代样式的属性值
+ */
+function renderValueField(type: string, value: any): React.ReactNode {
+    if (value === undefined || value === null || value === "") {
+        return <span className="text-xs text-muted-foreground/30 italic">Empty</span>;
+    }
+
+    switch (type) {
+        case "tags": {
+            const list = Array.isArray(value) ? value : [value];
+            return list.map((tag: any, idx: number) => {
+                const tagStr = String(tag).trim();
+                if (!tagStr) return null;
+                return (
+                    <span 
+                        key={idx} 
+                        className="bg-primary/5 border border-primary/20 hover:bg-primary/10 text-primary rounded-full px-2.5 py-0.5 text-[11px] font-medium flex items-center gap-0.5 transition-colors animate-fade-in"
+                    >
+                        <span>#</span>
+                        <span>{tagStr}</span>
+                    </span>
+                );
+            });
+        }
+        case "aliases": {
+            const list = Array.isArray(value) ? value : [value];
+            return list.map((alias: any, idx: number) => {
+                const aliasStr = String(alias).trim();
+                if (!aliasStr) return null;
+                return (
+                    <span 
+                        key={idx} 
+                        className="bg-muted border border-border/80 text-muted-foreground rounded px-2 py-0.5 text-[11px] font-medium transition-colors"
+                    >
+                        {aliasStr}
+                    </span>
+                );
+            });
+        }
+        case "list": {
+            return value.map((item: any, idx: number) => {
+                const itemStr = String(item).trim();
+                if (!itemStr) return null;
+                return (
+                    <span 
+                        key={idx} 
+                        className="bg-muted border border-border/80 text-muted-foreground rounded px-2 py-0.5 text-[11px] font-medium transition-colors"
+                    >
+                        {itemStr}
+                    </span>
+                );
+            });
+        }
+        case "checkbox": {
+            const isChecked = !!value;
+            return (
+                <div 
+                    className={cn(
+                        "flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold select-none border",
+                        isChecked 
+                            ? "bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400" 
+                            : "bg-muted border-border/80 text-muted-foreground"
+                    )}
+                >
+                    {isChecked ? <Check className="size-3" /> : <X className="size-3" />}
+                    <span>{isChecked ? "True" : "False"}</span>
+                </div>
+            );
+        }
+        case "number": {
+            return <span className="font-mono text-sm text-foreground/90 font-medium">{value}</span>;
+        }
+        case "date": {
+            return (
+                <span className="font-mono text-xs text-foreground/90 bg-sky-500/5 border border-sky-500/10 rounded px-1.5 py-0.5 font-medium">
+                    {value}
+                </span>
+            );
+        }
+        case "datetime": {
+            return (
+                <span className="font-mono text-xs text-foreground/90 bg-indigo-500/5 border border-indigo-500/10 rounded px-1.5 py-0.5 font-medium">
+                    {value.replace("T", " ")}
+                </span>
+            );
+        }
+        case "link": {
+            const url = String(value).trim();
+            return (
+                <a 
+                    href={url} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-primary hover:underline text-xs flex items-center gap-1 font-medium"
+                >
+                    <span className="truncate max-w-[320px]">{url}</span>
+                    <ExternalLink className="size-3" />
+                </a>
+            );
+        }
+        default: {
+            return <span className="text-xs text-foreground/90 whitespace-pre-wrap">{String(value)}</span>;
+        }
+    }
+}
 
 function buildFileApiUrl(vault: string, path: string, token: string): string {
     const params = new URLSearchParams({ vault, path, token, lang: getBrowserLang() });
@@ -750,18 +1048,39 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
             });
         }, []);
 
+        const { properties, contentBody } = useMemo(() => {
+            return parseFrontmatter(value);
+        }, [value]);
+
+        const [isExpanded, setIsExpanded] = useState(() => {
+            if (typeof window !== "undefined") {
+                return localStorage.getItem("fns_properties_expanded") !== "false";
+            }
+            return true;
+        });
+
+        const toggleExpanded = useCallback(() => {
+            setIsExpanded(prev => {
+                const next = !prev;
+                if (typeof window !== "undefined") {
+                    localStorage.setItem("fns_properties_expanded", String(next));
+                }
+                return next;
+            });
+        }, []);
+
         // 预览转换：首次同步计算（避免白屏），后续变化 debounce 150ms
         const [previewMarkdown, setPreviewMarkdown] = useState(() =>
-            mode === "preview" ? transformObsidianSyntax(value, vault, fileLinks, tokenRef.current, shareId, shareToken, password) : ""
+            mode === "preview" ? transformObsidianSyntax(contentBody, vault, fileLinks, tokenRef.current, shareId, shareToken, password) : ""
         );
 
         useEffect(() => {
             if (mode !== "preview") return;
             const timer = setTimeout(() => {
-                setPreviewMarkdown(transformObsidianSyntax(value, vault, fileLinks, tokenRef.current, shareId, shareToken, password));
+                setPreviewMarkdown(transformObsidianSyntax(contentBody, vault, fileLinks, tokenRef.current, shareId, shareToken, password));
             }, 150);
             return () => clearTimeout(timer);
-        }, [mode, value, vault, fileLinks, shareId, shareToken, password]);
+        }, [mode, contentBody, vault, fileLinks, shareId, shareToken, password]);
 
         const handleExportHTML = useCallback(() => {
             try {
@@ -813,9 +1132,73 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
         );
 
         if (mode === "preview") {
+            const hasProperties = Object.keys(properties).length > 0;
+
             return (
                 <div className={cn("markdown-preview", !autoHeight && "h-full overflow-y-auto", highlightClass)} onClick={handlePreviewClick}>
                     <article className={cn("mx-auto px-5 py-10 transition-all duration-300 break-words", fullWidth ? "max-w-none" : "max-w-225")}>
+                        {/* Obsidian Note Properties Panel */}
+                        <div className="bg-muted/30 border border-border/80 rounded-xl px-5 py-4 mb-6 shadow-sm backdrop-blur-[2px] transition-all">
+                            {/* Panel Header */}
+                            <div 
+                                onClick={hasProperties ? toggleExpanded : undefined}
+                                className={cn(
+                                    "flex items-center justify-between text-xs font-semibold select-none pb-2",
+                                    hasProperties ? "cursor-pointer hover:text-foreground/80" : "text-muted-foreground/60",
+                                    isExpanded && hasProperties && "border-b border-border/40"
+                                )}
+                            >
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                    <ClipboardList className="size-3.5" />
+                                    <span>{t("ui.note.properties")}</span>
+                                    {hasProperties && (
+                                        <span className="bg-muted px-1.5 py-0.2 rounded-full text-[10px] font-medium text-muted-foreground ml-1.5">
+                                            {Object.keys(properties).length}
+                                        </span>
+                                    )}
+                                </div>
+                                {hasProperties && (
+                                    <div className="text-muted-foreground/70">
+                                        {isExpanded ? <ChevronDown className="size-3.5" /> : <ChevronRight className="size-3.5" />}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Properties Content */}
+                            {isExpanded && (
+                                <div className="mt-3">
+                                    {!hasProperties ? (
+                                        <div className="text-xs text-muted-foreground/50 py-1 italic flex items-center gap-1.5">
+                                            <Info className="size-3.5 text-muted-foreground/40 animate-pulse" />
+                                            <span>{t("ui.note.noProperties")}</span>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-2.5">
+                                            {Object.entries(properties).map(([key, rawValue]) => {
+                                                const type = detectPropertyType(key, rawValue);
+                                                const Icon = getPropertyIcon(type);
+                                                
+                                                return (
+                                                    <div key={key} className="grid grid-cols-[144px_1fr] gap-x-4 items-start py-0.5">
+                                                        {/* Property Key */}
+                                                        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground/80 hover:text-foreground select-none h-6">
+                                                            <Icon className="size-3.5 shrink-0 text-muted-foreground/50" />
+                                                            <span className="truncate" title={key}>{key}</span>
+                                                        </div>
+
+                                                        {/* Property Value */}
+                                                        <div className="flex flex-wrap items-center gap-1.5 min-h-6">
+                                                            {renderValueField(type, rawValue)}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
                         <MarkdownRenderer content={previewMarkdown} />
                     </article>
                 </div>
