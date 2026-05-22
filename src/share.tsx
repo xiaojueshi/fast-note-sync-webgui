@@ -26,7 +26,7 @@ initColorScheme()
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
-        <ThemeProvider defaultTheme="auto" storageKey="share-theme">
+        <ThemeProvider defaultTheme="system" storageKey="share-theme">
             <ConfirmDialogProvider>
                 <ShareApp />
                 <Toaster />

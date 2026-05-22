@@ -65,7 +65,7 @@ initAdaptiveFavicon()
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <ThemeProvider defaultTheme="auto">
+    <ThemeProvider defaultTheme="system">
       <AuthProvider>
         <ConfirmDialogProvider>
           <App />
