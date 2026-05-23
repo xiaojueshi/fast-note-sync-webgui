@@ -136,7 +136,7 @@ export function ThemeSwitcher({
                     <button
                         ref={buttonRef}
                         type="button"
-                        className={className}
+                        className={cn(className, "focus-visible:outline-none")}
                         aria-label={ariaLabel ?? t("ui.common.toggleTheme")}
                         onMouseEnter={handleMouseEnter}
                         onMouseLeave={handleMouseLeave}
