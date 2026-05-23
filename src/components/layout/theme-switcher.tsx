@@ -4,6 +4,9 @@ import { useTheme } from "@/components/context/theme-context";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { useState, useRef, useEffect } from "react";
+import { useMobile } from "@/hooks/use-mobile";
+import { createPortal } from "react-dom";
 
 
 type Theme = "system" | "auto" | "light" | "dark";
@@ -57,40 +60,102 @@ export function ThemeSwitcher({
     const { t } = useTranslation();
     const { theme, resolvedTheme, setTheme } = useTheme();
 
+    const [showTooltip, setShowTooltip] = useState(false)
+    const [isOpen, setIsOpen] = useState(false)
+    const timerRef = useRef<number | null>(null)
+    const buttonRef = useRef<HTMLButtonElement>(null)
+    const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 })
+    const isMobile = useMobile()
+
+    useEffect(() => {
+        if (showTooltip && buttonRef.current) {
+            const rect = buttonRef.current.getBoundingClientRect()
+            setTooltipPosition({
+                top: rect.bottom + 8,
+                left: rect.left + rect.width / 2,
+            })
+        }
+    }, [showTooltip])
+
+    const handleMouseEnter = () => {
+        if (isMobile) return
+        timerRef.current = window.setTimeout(() => {
+            setShowTooltip(true)
+        }, 500)
+    }
+
+    const handleMouseLeave = () => {
+        if (timerRef.current) {
+            window.clearTimeout(timerRef.current)
+            timerRef.current = null
+        }
+        setShowTooltip(false)
+    }
+
+    useEffect(() => {
+        return () => {
+            if (timerRef.current) {
+                window.clearTimeout(timerRef.current)
+            }
+        }
+    }, [])
+
     const TriggerIcon = (() => {
         if (theme === "auto") return SunMoon;
         if (theme === "system") return Monitor;
         return resolvedTheme === "dark" ? Moon : Sun;
     })();
 
-    const titleText = t(
-        theme === "auto" ? "ui.settings.themeAuto"
-            : theme === "system" ? "ui.settings.themeSystem"
-                : resolvedTheme === "dark" ? "ui.settings.themeDark"
-                    : "ui.settings.themeLight"
-    );
 
     const accentColor = theme === "auto" || theme === "system";
 
+    const tooltipElement = showTooltip && !isMobile ? (
+        <div
+            className={cn(
+                "fixed z-[9999] px-2 py-1 text-xs font-medium whitespace-nowrap",
+                "bg-popover text-popover-foreground",
+                "rounded-md shadow-md border border-border",
+                "animate-in fade-in-0 zoom-in-95 duration-200"
+            )}
+            style={{
+                top: tooltipPosition.top,
+                left: tooltipPosition.left,
+                transform: "translate(-50%, 0)",
+            }}
+            role="tooltip"
+        >
+            {t("ui.common.toggleTheme")}
+        </div>
+    ) : null
+
     return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                {asPlainButton ? (
+        <>
+            <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+                <DropdownMenuTrigger asChild>
+                    {asPlainButton ? (
                     <button
+                        ref={buttonRef}
                         type="button"
                         className={className}
                         aria-label={ariaLabel ?? t("ui.common.toggleTheme")}
-                        title={titleText}
+                        onMouseEnter={handleMouseEnter}
+                        onMouseLeave={handleMouseLeave}
                     >
                         <TriggerIcon size={iconSize ?? 18} className={accentColor ? "text-primary" : undefined} />
                     </button>
                 ) : (
                     <Button
+                        ref={buttonRef}
                         variant="ghost"
                         size="icon"
-                        className={cn("size-9 hover:bg-accent/50 hover:text-foreground data-[state=open]:ring-2 data-[state=open]:ring-ring", className)}
+                        className={cn(
+                            "size-9 hover:bg-accent/50 hover:text-foreground focus-visible:outline-none focus-visible:ring-0",
+                            isOpen && "ring-2 ring-ring",
+                            className
+                        )}
                         aria-label={ariaLabel ?? t("ui.common.toggleTheme")}
-                        title={titleText}
+                        onMouseEnter={handleMouseEnter}
+                        onMouseLeave={handleMouseLeave}
                     >
                         <TriggerIcon className={cn("size-5", accentColor && "text-primary")} />
                     </Button>
@@ -113,6 +178,8 @@ export function ThemeSwitcher({
                     ))}
                 </DropdownMenuRadioGroup>
             </DropdownMenuContent>
-        </DropdownMenu>
+            </DropdownMenu>
+            {typeof document !== 'undefined' && createPortal(tooltipElement, document.body)}
+        </>
     );
 }
