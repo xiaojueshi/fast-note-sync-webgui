@@ -513,6 +513,8 @@ export default {
     "ui.system.checkNow": "Check Now",
     "ui.system.checking": "Checking...",
     "ui.system.newVersionAvailable": "New Version Available",
+    "ui.system.versionHistory": "Intermediate Versions",
+    "ui.system.clickToExpand": "Click to expand changelog",
     "ui.system.alreadyLatest": "Already Latest Version",
     "ui.system.viewRelease": "View Release",
     "ui.system.upgrade": "Upgrade",

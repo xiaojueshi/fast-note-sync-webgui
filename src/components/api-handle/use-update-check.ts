@@ -1,8 +1,8 @@
 import { addCacheBuster } from "@/lib/utils/cache-buster";
 import { useState, useCallback } from "react";
 import { buildApiHeaders } from "@/lib/utils/api-headers";
+import type { HistoricalVersion } from "@/lib/types/version";
 import env from "@/env.ts";
-
 
 export interface UpdateCheckResult {
     hasUpdate: boolean;
@@ -11,8 +11,8 @@ export interface UpdateCheckResult {
     releaseNotes: string | null;
     releaseNotesContent: string | null;
     publishedAt: string | null;
+    versionHistory?: HistoricalVersion[];
 }
-
 
 export function useUpdateCheck() {
     const [isChecking, setIsChecking] = useState(false);
@@ -53,6 +53,7 @@ export function useUpdateCheck() {
                 releaseNotes: release.versionNewChangelog,
                 releaseNotesContent: release.versionNewChangelogContent,
                 publishedAt: release.buildTime,
+                versionHistory: release.versionHistory,
             };
 
             setUpdateResult(result);

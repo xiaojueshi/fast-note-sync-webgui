@@ -513,6 +513,8 @@ export default {
     "ui.system.checkNow": "立即检查",
     "ui.system.checking": "检查中...",
     "ui.system.newVersionAvailable": "发现新版本",
+    "ui.system.versionHistory": "中间版本",
+    "ui.system.clickToExpand": "点击展开更新日志",
     "ui.system.alreadyLatest": "已是最新版本",
     "ui.system.viewRelease": "查看发布页",
     "ui.system.upgrade": "升级",

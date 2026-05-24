@@ -1,4 +1,4 @@
-import { Info, GitBranch, Tag, RefreshCw, AlertCircle, CheckCircle, ExternalLink, Loader2, ArrowUpCircle, Rocket, ArrowRight } from "lucide-react";
+import { Info, GitBranch, Tag, RefreshCw, AlertCircle, CheckCircle, ExternalLink, Loader2, ArrowUpCircle, Rocket, ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
 import { useUpdateCheck } from "@/components/api-handle/use-update-check";
 import { useVersion } from "@/components/api-handle/use-version";
 import { addCacheBuster } from "@/lib/utils/cache-buster";
@@ -143,6 +143,7 @@ export function VersionOverview({ showUpgrade = true, children }: { showUpgrade?
         const currentVersion = versionInfo?.version || "Unknown"
         const targetVersion = updateResult?.latestVersion || versionInfo?.versionNewName || versionInfo?.version || "Unknown"
         const changelog = updateResult?.releaseNotesContent || versionInfo?.versionNewChangelogContent || ""
+        const history = updateResult?.versionHistory || versionInfo?.versionHistory
 
         openConfirmDialog(
             t("ui.system.newVersionAvailable"),
@@ -191,8 +192,27 @@ export function VersionOverview({ showUpgrade = true, children }: { showUpgrade?
                         </div>
                     </div>
                 )}
+
+                {history && history.length > 0 && (
+                    <div className="space-y-2">
+                        <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider flex items-center gap-2 px-1">
+                             <Rocket className="h-3 w-3" />
+                             {t("ui.system.versionHistory")}
+                        </div>
+                        <div className="space-y-2">
+                            {history.map((item, idx) => (
+                                <CollapsibleVersionItem 
+                                    key={idx} 
+                                    version={item.version} 
+                                    changelog={item.changelogContent} 
+                                    highlightClass={highlightClass}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>,
-            "max-w-xl"
+            "max-w-4xl"
         )
     }
 
@@ -321,6 +341,26 @@ export function VersionOverview({ showUpgrade = true, children }: { showUpgrade?
                                         </ReactMarkdown>
                                     </div>
                                 )}
+                                {(() => {
+                                    const history = updateResult?.versionHistory || versionInfo?.versionHistory;
+                                    return history && history.length > 0 && (
+                                        <div className="mt-4 pt-3 border-t border-border/40 space-y-2">
+                                            <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider px-1">
+                                                {t("ui.system.versionHistory")}
+                                            </div>
+                                            <div className="space-y-2">
+                                                {history.map((item, idx) => (
+                                                    <CollapsibleVersionItem 
+                                                        key={idx} 
+                                                        version={item.version} 
+                                                        changelog={item.changelogContent} 
+                                                        highlightClass={highlightClass}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
                             </div>
                         </div>
                     </div>
@@ -331,6 +371,62 @@ export function VersionOverview({ showUpgrade = true, children }: { showUpgrade?
                     <div className="border-t border-border" />
                     {children}
                 </>
+            )}
+        </div>
+    )
+}
+
+function CollapsibleVersionItem({ version, changelog, highlightClass }: { version: string, changelog: string, highlightClass: string }) {
+    const [isOpen, setIsOpen] = useState(false)
+    const { t } = useTranslation()
+
+    return (
+        <div className="border border-border/60 rounded-xl overflow-hidden bg-muted/20">
+            <button
+                type="button"
+                onClick={() => setIsOpen(!isOpen)}
+                className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium hover:bg-muted/40 transition-colors text-left cursor-pointer"
+            >
+                <div className="flex items-center gap-2">
+                    <span className="font-mono font-bold bg-background border border-border/80 px-2 py-0.5 rounded text-foreground">
+                        v{version}
+                    </span>
+                    <span className="text-muted-foreground text-[10px]">
+                        {t("ui.system.clickToExpand")}
+                    </span>
+                </div>
+                <div className="text-muted-foreground">
+                    {isOpen ? (
+                        <ChevronUp className="h-4 w-4" />
+                    ) : (
+                        <ChevronDown className="h-4 w-4" />
+                    )}
+                </div>
+            </button>
+            
+            {isOpen && (
+                <div className={cn("border-t border-border/40 p-4 text-xs text-muted-foreground bg-background leading-relaxed max-h-60 overflow-y-auto", highlightClass)}>
+                    {changelog ? (
+                        <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                            components={{
+                                h1: ({ ...props }) => <h1 className="text-sm font-bold mt-3 mb-1.5 text-foreground" {...props} />,
+                                h2: ({ ...props }) => <h2 className="text-xs font-bold mt-2.5 mb-1 text-foreground" {...props} />,
+                                h3: ({ ...props }) => <h3 className="text-xs font-semibold mt-2 mb-1 text-foreground" {...props} />,
+                                p: ({ ...props }) => <p className="my-1" {...props} />,
+                                ul: ({ ...props }) => <ul className="list-disc pl-4 my-1.5 space-y-0.5" {...props} />,
+                                li: ({ ...props }) => <li className="my-0.5" {...props} />,
+                                code: ({ ...props }) => <code className="bg-muted px-1.5 py-0.5 rounded text-[10px] font-mono text-foreground" {...props} />,
+                                a: ({ ...props }) => <a className="text-primary hover:underline" target="_blank" rel="noopener noreferrer" {...props} />,
+                            }}
+                        >
+                            {transformObsidianSyntax(changelog, "", {}, "")}
+                        </ReactMarkdown>
+                    ) : (
+                        <p className="text-muted-foreground/50 text-[10px] italic">暂无更新说明</p>
+                    )}
+                </div>
             )}
         </div>
     )

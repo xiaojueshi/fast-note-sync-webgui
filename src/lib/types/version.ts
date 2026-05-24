@@ -1,3 +1,8 @@
+export interface HistoricalVersion {
+    version: string;
+    changelogContent: string;
+}
+
 export interface VersionInfo {
     buildTime: string;
     gitTag: string;
@@ -7,4 +12,5 @@ export interface VersionInfo {
     versionNewName?: string;
     versionNewChangelog?: string;
     versionNewChangelogContent?: string;
+    versionHistory?: HistoricalVersion[];
 }
