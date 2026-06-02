@@ -1,4 +1,4 @@
-import { ArrowLeft, Folder, History, RefreshCcw, Check, X, Cloud, Fullscreen, Shrink, Eye, Pencil, Columns2, PanelLeftClose, ArrowLeftRight, Maximize, Minimize, Share2 } from "lucide-react";
+import { ArrowLeft, Folder, History, RefreshCcw, Check, X, Cloud, Fullscreen, Shrink, Eye, Pencil, Columns2, PanelLeftClose, ArrowLeftRight, Maximize, Minimize, Share2, Download } from "lucide-react";
 import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
 import { useNoteHandle } from "@/components/api-handle/note-handle";
 import { ShareModal } from "@/components/share/share-modal";
@@ -186,6 +186,21 @@ export function NoteEditor({
             loadNote();
         }
     }, [note, loadNote]);
+
+    // 下载当前编辑/查看的 Markdown 笔记源文件 / Download the current Markdown note source file
+    const handleDownload = useCallback(() => {
+        const latestContent = editorRef.current?.getValue() ?? contentRef.current;
+        const blob = new Blob([latestContent], { type: "text/markdown;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        const downloadName = filename.endsWith(".md") ? filename : `${filename}.md`;
+        link.setAttribute("download", downloadName);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }, [filename]);
 
     // 组件卸载时：若存在防抖中的保存，立即 flush 一次
     useEffect(() => {
@@ -652,6 +667,18 @@ export function NoteEditor({
                                 className="rounded-lg sm:rounded-xl h-7 w-7 sm:h-10 sm:w-10"
                             >
                                 <Share2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                            </Button>
+                        </Tooltip>
+                    )}
+                    {note && (
+                        <Tooltip content={t("ui.note.downloadMarkdown", { defaultValue: "Download Markdown" })} side="bottom" delay={200}>
+                            <Button
+                                onClick={handleDownload}
+                                variant="outline"
+                                size="icon"
+                                className="rounded-lg sm:rounded-xl h-7 w-7 sm:h-10 sm:w-10"
+                            >
+                                <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                             </Button>
                         </Tooltip>
                     )}

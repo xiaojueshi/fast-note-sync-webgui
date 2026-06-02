@@ -206,7 +206,7 @@ function DroppableBreadcrumbButton({ path, children, className }: DroppableBread
 
 export function NoteList({ vault, vaults, onVaultChange, onSelectNote, onCreateNote, page, setPage, pageSize, setPageSize, onViewHistory, isRecycle = false, searchKeyword, setSearchKeyword, currentPath, setCurrentPath, currentPathHash, setCurrentPathHash, pathHashMap, setPathHashMap, shareFilter, setShareFilter, viewMode, setViewMode }: NoteListProps) {
     const { t } = useTranslation();
-    const { handleNoteList, handleDeleteNote, handleRestoreNote, handleFolderList, handleFolderNotes, handlePermanentDeleteNote, handleClearNoteRecycle, handleRenameNote, handleNoteListByPaths } = useNoteHandle();
+    const { handleNoteList, handleDeleteNote, handleRestoreNote, handleFolderList, handleFolderNotes, handlePermanentDeleteNote, handleClearNoteRecycle, handleRenameNote, handleNoteListByPaths, handleDeleteFolder } = useNoteHandle();
     const { handleGetNoteSharePaths } = useShareHandle();
     const { openConfirmDialog } = useConfirmDialog();
 
@@ -497,6 +497,40 @@ export function NoteList({ vault, vaults, onVaultChange, onSelectNote, onCreateN
             handleDeleteNote(vault, note.path, note.pathHash, () => {
                 fetchNotes();
             });
+        });
+    };
+
+    const onDeleteFolder = (e: React.MouseEvent, folder: Folder) => {
+        e.stopPropagation();
+        const title = folder.path.split("/").pop() || folder.path;
+
+        setLoading(true);
+        Promise.all([
+            new Promise<Folder[] | null>(resolve => handleFolderList(vault, folder.path, folder.pathHash, resolve)),
+            new Promise<{ list: Note[] } | null>(resolve =>
+                handleFolderNotes(vault, folder.path, folder.pathHash, 1, 1, "mtime", "desc", resolve)
+            ),
+            new Promise<FileListResponse | null>(resolve =>
+                handleFolderFiles(vault, folder.path, folder.pathHash, 1, 1, "mtime", "desc", resolve)
+            )
+        ]).then(([subfolders, noteData, fileData]) => {
+            setLoading(false);
+            const subfoldersList = subfolders || [];
+            const notesList = noteData?.list || [];
+            const filesList = fileData?.list || [];
+
+            if (subfoldersList.length > 0 || notesList.length > 0 || filesList.length > 0) {
+                openConfirmDialog(t("ui.note.deleteFolderNotEmpty"), "alert");
+            } else {
+                openConfirmDialog(t("ui.note.deleteFolderConfirm", { title }), "confirm", () => {
+                    handleDeleteFolder(vault, folder.path, folder.pathHash, () => {
+                        fetchNotes();
+                    });
+                });
+            }
+        }).catch(err => {
+            setLoading(false);
+            console.error(err);
         });
     };
 
@@ -1295,7 +1329,16 @@ export function NoteList({ vault, vaults, onVaultChange, onSelectNote, onCreateN
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                                <div className="shrink-0">
+                                                                <div className="shrink-0 flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-7 w-7 sm:h-8 sm:w-8 rounded-xl text-muted-foreground hover:text-destructive"
+                                                                        onClick={(e) => onDeleteFolder(e, folder)}
+                                                                        aria-label={t("ui.common.delete")}
+                                                                    >
+                                                                        <Trash2 className="h-4 w-4" />
+                                                                    </Button>
                                                                     <ChevronRight className="h-5 w-5 text-muted-foreground" />
                                                                 </div>
                                                             </div>
