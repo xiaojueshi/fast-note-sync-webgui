@@ -48,7 +48,7 @@ export function NoteManager({
     // Lifted state for pagination
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(() => {
-        const saved = localStorage.getItem("notePageSize");
+        const saved = localStorage.getItem(isRecycle ? "trashPageSize" : "notePageSize");
         return saved ? parseInt(saved, 10) : 10;
     });
     const [searchKeyword, setSearchKeyword] = useState("");
@@ -63,17 +63,20 @@ export function NoteManager({
 
     // Lifted view mode state (survives editor unmount)
     const [viewMode, setViewMode] = useState<ViewModeType>(() => {
+        if (isRecycle) return "flat";
         const saved = localStorage.getItem("noteViewMode");
         return (saved as ViewModeType) || "folder";
     });
 
     useEffect(() => {
-        localStorage.setItem("noteViewMode", viewMode);
-    }, [viewMode]);
+        if (!isRecycle) {
+            localStorage.setItem("noteViewMode", viewMode);
+        }
+    }, [viewMode, isRecycle]);
 
     useEffect(() => {
-        localStorage.setItem("notePageSize", pageSize.toString());
-    }, [pageSize]);
+        localStorage.setItem(isRecycle ? "trashPageSize" : "notePageSize", pageSize.toString());
+    }, [pageSize, isRecycle]);
 
     const { handleVaultList } = useVaultHandle();
 

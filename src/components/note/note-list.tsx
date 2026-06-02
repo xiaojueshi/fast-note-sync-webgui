@@ -443,6 +443,15 @@ export function NoteList({ vault, vaults, onVaultChange, onSelectNote, onCreateN
         setFilePage(1);
     }, [debouncedKeyword, filterType, setPage]);
 
+    useEffect(() => {
+        if (isRecycle) {
+            setViewMode("flat");
+            if (searchMode === "content") {
+                setSearchMode("path");
+            }
+        }
+    }, [isRecycle, setViewMode, searchMode]);
+
     const handlePageChange = (newPage: number) => {
         const currentTotalRows = viewMode === "folder" ? mergedList.length : totalRows;
         if (newPage >= 1 && newPage <= Math.ceil(currentTotalRows / pageSize)) {
@@ -861,8 +870,8 @@ export function NoteList({ vault, vaults, onVaultChange, onSelectNote, onCreateN
                                         </DropdownMenuItem>
                                         <DropdownMenuItem
                                             onClick={() => setSearchMode("content")}
-                                            disabled={filterType === "files"}
-                                            className={`rounded-lg flex items-center justify-between text-xs sm:text-sm ${searchMode === "content" ? "bg-accent text-accent-foreground font-medium" : ""} ${filterType === "files" ? "opacity-40" : ""}`}
+                                            disabled={filterType === "files" || isRecycle}
+                                            className={`rounded-lg flex items-center justify-between text-xs sm:text-sm ${searchMode === "content" ? "bg-accent text-accent-foreground font-medium" : ""} ${(filterType === "files" || isRecycle) ? "opacity-40" : ""}`}
                                         >
                                             <div className="flex items-center gap-2">
                                                 <NotepadText className="h-4 w-4" />
