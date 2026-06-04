@@ -375,6 +375,7 @@ export default {
     "ui.settings.shareTokenKey": "공유 토큰 암호화 난독화 문자",
     "ui.settings.shareTokenExpiry": "공유 토큰 만료 시간",
     "ui.settings.registerIsEnable": "등록 허용",
+    "ui.settings.allowRegister": "등록 허용",
     "ui.settings.fileChunkSize": "첨부 파일 업로드 청크 크기",
     "ui.settings.softDeleteRetentionTime": "휴지통 (소프트 삭제) 보관 시간",
     "ui.settings.uploadSessionTimeout": "첨부 파일 업로드 세션 시간 초과",

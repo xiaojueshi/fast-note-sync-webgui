@@ -375,6 +375,7 @@ export default {
     "ui.settings.shareTokenKey": "Share Token Encryption Obfuscation String",
     "ui.settings.shareTokenExpiry": "Share Token Expiry Time",
     "ui.settings.registerIsEnable": "Open Registration",
+    "ui.settings.allowRegister": "Allow Registration",
     "ui.settings.fileChunkSize": "Attachment Upload Chunk Size",
     "ui.settings.softDeleteRetentionTime": "Recycle Bin (Soft Delete) Retention Time",
     "ui.settings.uploadSessionTimeout": "Attachment Upload Session Timeout",

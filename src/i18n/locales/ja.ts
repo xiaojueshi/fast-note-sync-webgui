@@ -375,6 +375,7 @@ export default {
     "ui.settings.shareTokenKey": "共有トークン暗号化混淆文字",
     "ui.settings.shareTokenExpiry": "共有トークンの有効期限",
     "ui.settings.registerIsEnable": "登録を許可",
+    "ui.settings.allowRegister": "登録を許可",
     "ui.settings.fileChunkSize": "添付ファイルアップロードのチャンクサイズ",
     "ui.settings.softDeleteRetentionTime": "ゴミ箱（ソフト削除）の保持期間",
     "ui.settings.uploadSessionTimeout": "添付ファイルアップロードセッションのタイムアウト",

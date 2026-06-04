@@ -375,6 +375,7 @@ export default {
     "ui.settings.shareTokenKey": "分享令牌加密混淆字元",
     "ui.settings.shareTokenExpiry": "分享令牌過期時間",
     "ui.settings.registerIsEnable": "開放註冊",
+    "ui.settings.allowRegister": "允許註冊",
     "ui.settings.fileChunkSize": "附件上傳分片大小",
     "ui.settings.softDeleteRetentionTime": "回收站 (軟刪除) 保留時間",
     "ui.settings.uploadSessionTimeout": "附件上傳會話超時",

@@ -830,7 +830,7 @@ export function SystemSettings({ onBack, isDashboard = false, isAdmin = false }:
                                         </div>
                                         <div className="flex items-center space-x-2">
                                             <Checkbox id="registerIsEnable" checked={config.registerIsEnable} onCheckedChange={(checked) => updateConfig({ registerIsEnable: !!checked })} />
-                                            <Label htmlFor="registerIsEnable" className="text-sm">{config.registerIsEnable ? t("ui.common.isEnabled") : t("ui.common.close")}</Label>
+                                            <Label htmlFor="registerIsEnable" className="text-sm cursor-pointer">{t("ui.settings.allowRegister")}</Label>
                                         </div>
                                         <p className="text-xs text-muted-foreground whitespace-pre-line" dangerouslySetInnerHTML={{ __html: t("ui.settings.registerIsEnableDesc") }} />
                                     </div>
