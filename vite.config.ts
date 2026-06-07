@@ -52,6 +52,7 @@ export default defineConfig({
       input: {
         main: path.resolve(__dirname, 'index.html'),
         share: path.resolve(__dirname, 'share.html'),
+        oauthAuthorize: path.resolve(__dirname, 'oauth-authorize.html'),
       },
       output: {
         chunkFileNames: 'assets/[name]-[hash].js',
