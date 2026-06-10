@@ -3,6 +3,7 @@ import { useVaultHandle } from "@/components/api-handle/vault-handle";
 // 获取主滚动容器 / Get the main scroll container
 const getMainEl = () => document.querySelector('main') as HTMLElement | null;
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
+import { hashCode } from "@/lib/utils/hash";
 import type { ShareFilterType, ViewModeType } from "@/components/note/note-list";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
@@ -182,7 +183,7 @@ export function NoteManager({
             if (match) {
                 const folder = match.path.includes('/') ? match.path.substring(0, match.path.lastIndexOf('/')) : '';
                 setCurrentPath(folder);
-                setCurrentPathHash(pathHashMap[folder] || "");
+                setCurrentPathHash(pathHashMap[folder] || (folder ? hashCode(folder) : ""));
                 handleSelectNote(match, true);
             } else {
                 toast.info(t("ui.note.wikiLinkNotFound", { target: resolvedTarget }));
@@ -214,7 +215,7 @@ export function NoteManager({
                 if (match) {
                     const folder = match.path.includes('/') ? match.path.substring(0, match.path.lastIndexOf('/')) : '';
                     setCurrentPath(folder);
-                    setCurrentPathHash(pathHashMap[folder] || "");
+                    setCurrentPathHash(pathHashMap[folder] || (folder ? hashCode(folder) : ""));
                     handleSelectNote(match, true);
                 }
             });
