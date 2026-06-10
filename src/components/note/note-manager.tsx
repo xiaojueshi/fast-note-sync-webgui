@@ -182,13 +182,13 @@ export function NoteManager({
             if (match) {
                 const folder = match.path.includes('/') ? match.path.substring(0, match.path.lastIndexOf('/')) : '';
                 setCurrentPath(folder);
-                setCurrentPathHash(match.pathHash || '');
+                setCurrentPathHash(pathHashMap[folder] || "");
                 handleSelectNote(match, true);
             } else {
                 toast.info(t("ui.note.wikiLinkNotFound", { target: resolvedTarget }));
             }
         });
-    }, [vault, handleNoteList, handleSelectNote, t]);
+    }, [vault, handleNoteList, handleSelectNote, t, pathHashMap]);
 
     // 从 URL 参数中读取 notePath（新标签页打开 MD 链接时）
     useEffect(() => {
@@ -214,12 +214,12 @@ export function NoteManager({
                 if (match) {
                     const folder = match.path.includes('/') ? match.path.substring(0, match.path.lastIndexOf('/')) : '';
                     setCurrentPath(folder);
-                    setCurrentPathHash(match.pathHash || '');
+                    setCurrentPathHash(pathHashMap[folder] || "");
                     handleSelectNote(match, true);
                 }
             });
         }
-    }, [vault, handleNoteList, handleSelectNote, setCurrentPath, setCurrentPathHash]);
+    }, [vault, handleNoteList, handleSelectNote, setCurrentPath, setCurrentPathHash, pathHashMap]);
 
     const handleCreateNote = () => {
         setSelectedNote(undefined);
