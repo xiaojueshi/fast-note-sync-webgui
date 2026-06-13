@@ -263,6 +263,10 @@ body:has(.auth-page-container)::after {
   border-color: rgba(0, 0, 0, 0.2);
 }
 
+.auth-button-secondary + .auth-button-secondary {
+  margin-top: 0.5rem;
+}
+
 .auth-button-secondary span {
   min-width: 0;
   overflow-wrap: anywhere;

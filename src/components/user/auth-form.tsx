@@ -3,6 +3,7 @@ import "../../styles/auth.css";
 import { createLoginSchema, createRegisterSchema, type LoginFormData, type RegisterFormData } from "@/lib/validations/user-schema";
 import { AnimatedBackground } from "@/components/user/animated-background";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
+import { normalizeOIDCProviders, type OIDCProvider } from "@/components/user/auth-oidc";
 import { addCacheBuster } from "@/lib/utils/cache-buster";
 import { buildApiHeaders } from "@/lib/utils/api-headers";
 import { motion, AnimatePresence, type Variants } from "motion/react";
@@ -22,12 +23,6 @@ import env from "@/env.ts";
 interface AuthFormProps {
   onSuccess: () => void
   registerIsEnable?: boolean
-}
-
-interface OIDCConfig {
-  enabled: boolean
-  displayName: string
-  startUrl: string
 }
 
 const formVariants: Variants = {
@@ -52,7 +47,7 @@ export function AuthForm({ onSuccess, registerIsEnable = true }: AuthFormProps) 
   const { isLoading, login, registerUser } = useAuth()
   const { resolvedTheme } = useTheme()
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login')
-  const [oidcConfig, setOIDCConfig] = useState<OIDCConfig | null>(null)
+  const [oidcProviders, setOIDCProviders] = useState<OIDCProvider[]>([])
 
   const loginSchema = createLoginSchema(t)
   const registerSchema = createRegisterSchema(t)
@@ -78,12 +73,12 @@ export function AuthForm({ onSuccess, registerIsEnable = true }: AuthFormProps) 
         })
         if (!response.ok) return
         const res = await response.json()
-        if (!cancelled && res.code < 100 && res.code > 0 && res.data?.enabled) {
-          setOIDCConfig(res.data)
+        if (!cancelled && res.code < 100 && res.code > 0) {
+          setOIDCProviders(normalizeOIDCProviders(res.data))
         }
       } catch (_error) {
         if (!cancelled) {
-          setOIDCConfig(null)
+          setOIDCProviders([])
         }
       }
     }
@@ -111,11 +106,10 @@ export function AuthForm({ onSuccess, registerIsEnable = true }: AuthFormProps) 
     }
   }
 
-  const handleOIDCLogin = () => {
-    if (!oidcConfig?.startUrl) return
+  const handleOIDCLogin = (provider: OIDCProvider) => {
     const apiUrl = env.API_URL.endsWith("/") ? env.API_URL.slice(0, -1) : env.API_URL
     const redirectTo = window.location.pathname + window.location.search + window.location.hash
-    window.location.href = `${apiUrl}${oidcConfig.startUrl}?redirectTo=${encodeURIComponent(redirectTo)}`
+    window.location.href = `${apiUrl}${provider.startUrl}?redirectTo=${encodeURIComponent(redirectTo)}`
   }
 
   const toggleTab = (tab: 'login' | 'register') => {
@@ -340,17 +334,20 @@ export function AuthForm({ onSuccess, registerIsEnable = true }: AuthFormProps) 
             )}
           </AnimatePresence>
 
-          {activeTab === 'login' && oidcConfig?.enabled && (
+          {activeTab === 'login' && oidcProviders.length > 0 && (
             <div className="auth-oidc-section">
               <div className="auth-divider" />
-              <button
-                type="button"
-                onClick={handleOIDCLogin}
-                className="auth-button-secondary"
-              >
-                <KeyRound size={16} />
-                <span>{oidcConfig.displayName}</span>
-              </button>
+              {oidcProviders.map((provider) => (
+                <button
+                  key={provider.id}
+                  type="button"
+                  onClick={() => handleOIDCLogin(provider)}
+                  className="auth-button-secondary"
+                >
+                  <KeyRound size={16} />
+                  <span>{provider.displayName}</span>
+                </button>
+              ))}
             </div>
           )}
 
