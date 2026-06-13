@@ -3,6 +3,7 @@ import { useVaultHandle } from "@/components/api-handle/vault-handle";
 // 获取主滚动容器 / Get the main scroll container
 const getMainEl = () => document.querySelector('main') as HTMLElement | null;
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
+import { hashCode } from "@/lib/utils/hash";
 import type { ShareFilterType, ViewModeType } from "@/components/note/note-list";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
@@ -18,6 +19,29 @@ import { CanvasViewer } from "./canvas-viewer";
 import { NoteList } from "./note-list";
 import { useAppStore } from "@/stores/app-store";
 
+
+// 工具函数：将笔记内的相对路径解析为 vault 绝对路径（纯函数，无 hook 依赖）
+function resolveNotePath(target: string, currentNotePath?: string): string {
+    let normalized = target.replace(/#.*$/, '').replace(/\.md$/i, '').trim();
+    if (!normalized) return '';
+
+    if (normalized.startsWith('./')) {
+        normalized = normalized.slice(2);
+    }
+    if (normalized.startsWith('../') && currentNotePath) {
+        const dir = currentNotePath.includes('/')
+            ? currentNotePath.substring(0, currentNotePath.lastIndexOf('/'))
+            : '';
+        const parts = dir ? dir.split('/') : [];
+        while (normalized.startsWith('../')) {
+            if (parts.length > 0) parts.pop();
+            normalized = normalized.slice(3);
+        }
+        normalized = [...parts, normalized].filter(Boolean).join('/');
+    }
+
+    return normalized;
+}
 
 interface NoteManagerProps {
     vault: string;
@@ -137,32 +161,66 @@ export function NoteManager({
         setView("editor");
     }, []);
 
-    const handleWikiLinkClick = useCallback((target: string) => {
-        // 1. 去锚点、去 .md
-        const normalizedTarget = target.replace(/#.*$/, '').replace(/\.md$/i, '').trim();
-        if (!normalizedTarget) return;
+    const handleWikiLinkClick = useCallback((target: string, currentNotePath?: string) => {
+        // 1. 解析路径（去锚点、去 .md、解析相对路径）
+        const resolvedTarget = resolveNotePath(target, currentNotePath);
+        if (!resolvedTarget) return;
 
         // 2. API 搜索
-        handleNoteList(vault, 1, 50, normalizedTarget, false, "path", false, "mtime", "desc", (data) => {
+        handleNoteList(vault, 1, 50, resolvedTarget, false, "path", false, "mtime", "desc", (data) => {
             if (!data?.list?.length) {
-                toast.info(t("ui.note.wikiLinkNotFound", { target: normalizedTarget }));
+                toast.info(t("ui.note.wikiLinkNotFound", { target: resolvedTarget }));
                 return;
             }
 
             // 3. 精确匹配
             const match = data.list.find(n => {
                 const notePath = n.path.replace(/\.md$/i, '');
-                return notePath === normalizedTarget
-                    || notePath.endsWith('/' + normalizedTarget);
+                return notePath === resolvedTarget
+                    || notePath.endsWith('/' + resolvedTarget);
             });
 
             if (match) {
+                const folder = match.path.includes('/') ? match.path.substring(0, match.path.lastIndexOf('/')) : '';
+                setCurrentPath(folder);
+                setCurrentPathHash(pathHashMap[folder] || (folder ? hashCode(folder) : ""));
                 handleSelectNote(match, true);
             } else {
-                toast.info(t("ui.note.wikiLinkNotFound", { target: normalizedTarget }));
+                toast.info(t("ui.note.wikiLinkNotFound", { target: resolvedTarget }));
             }
         });
-    }, [vault, handleNoteList, handleSelectNote, t]);
+    }, [vault, handleNoteList, handleSelectNote, t, pathHashMap]);
+
+    // 从 URL 参数中读取 notePath（新标签页打开 MD 链接时）
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const notePathParam = params.get('notePath');
+        const fromNotePath = params.get('fromNotePath') || '';
+
+        if (notePathParam && vault) {
+            params.delete('notePath');
+            params.delete('fromNotePath');
+            const search = params.toString().replace(/=(?=&|$)/g, '');
+            window.history.replaceState(null, '', window.location.pathname + (search ? `?${search}` : ''));
+
+            const resolvedTarget = resolveNotePath(notePathParam, fromNotePath);
+            if (!resolvedTarget) return;
+
+            handleNoteList(vault, 1, 50, resolvedTarget, false, "path", false, "mtime", "desc", (data) => {
+                if (!data?.list?.length) return;
+                const match = data.list.find(n => {
+                    const notePath = n.path.replace(/\.md$/i, '');
+                    return notePath === resolvedTarget || notePath.endsWith('/' + resolvedTarget);
+                });
+                if (match) {
+                    const folder = match.path.includes('/') ? match.path.substring(0, match.path.lastIndexOf('/')) : '';
+                    setCurrentPath(folder);
+                    setCurrentPathHash(pathHashMap[folder] || (folder ? hashCode(folder) : ""));
+                    handleSelectNote(match, true);
+                }
+            });
+        }
+    }, [vault, handleNoteList, handleSelectNote, setCurrentPath, setCurrentPathHash, pathHashMap]);
 
     const handleCreateNote = () => {
         setSelectedNote(undefined);
@@ -173,6 +231,7 @@ export function NoteManager({
     const handleBack = () => {
         setView("list");
         setSelectedNote(undefined);
+        setPage(1);
     };
 
     const handleNavigateToFolder = (folderPath: string) => {

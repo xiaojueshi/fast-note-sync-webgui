@@ -117,6 +117,13 @@ export function useUrlSync(
             if (currentPathHash) params.set('pathHash', currentPathHash);
         }
 
+        // 保留 notePath / fromNotePath 参数（新标签页打开 MD 链接时传入）
+        const existingParams = new URLSearchParams(window.location.search);
+        const existingNotePath = existingParams.get('notePath');
+        const existingFromNotePath = existingParams.get('fromNotePath');
+        if (existingNotePath) params.set('notePath', existingNotePath);
+        if (existingFromNotePath) params.set('fromNotePath', existingFromNotePath);
+
         // 构造查询字符串，移除无值参数的等号 (例如 ?notes=&vault=... -> ?notes&vault=...)
         const search = params.toString().replace(/=(?=&|$)/g, '');
         const newUrl = window.location.pathname + (search ? `?${search}` : '');

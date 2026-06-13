@@ -86,17 +86,20 @@
 
 /* Wiki Links [[page]] */
 .obsidian-wiki-link {
-  color: hsl(var(--primary));
+  color: var(--primary);
   background: hsl(var(--primary) / 0.08);
   padding: 0 4px;
   border-radius: 4px;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, opacity 0.15s ease;
+
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
 .obsidian-wiki-link:hover {
-  background: hsl(var(--primary) / 0.15);
+  opacity: 0.8;
 }
 
 /* Tags #tag */
