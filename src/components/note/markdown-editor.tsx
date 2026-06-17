@@ -3,7 +3,7 @@ import "./markdown-editor.css";
 import { markdown } from "@codemirror/lang-markdown";
 import { EditorView, placeholder as cmPlaceholder } from "@codemirror/view";
 import CodeMirror from "@uiw/react-codemirror";
-import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+import React, { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import ReactMarkdown, { type Components } from "react-markdown";
 import { MermaidBlock } from "./mermaid-block";
 import { renderToStaticMarkup } from "react-dom/server";
