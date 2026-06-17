@@ -18,6 +18,8 @@ import { NoteEditor } from "./note-editor";
 import { CanvasViewer } from "./canvas-viewer";
 import { NoteList } from "./note-list";
 import { useAppStore } from "@/stores/app-store";
+import { TocProvider } from "@/components/context/toc-context";
+import { TableOfContents } from "@/components/note/table-of-contents";
 
 
 // 工具函数：将笔记内的相对路径解析为 vault 绝对路径（纯函数，无 hook 依赖）
@@ -341,20 +343,23 @@ export function NoteManager({
                         onWikiLinkClick={handleWikiLinkClick}
                     />
                 ) : (
-                    <NoteEditor
-                        vault={vault}
-                        note={selectedNote}
-                        onBack={handleBack}
-                        onNavigateToFolder={handleNavigateToFolder}
-                        onSaveSuccess={handleSaveSuccess}
-                        onViewHistory={() => selectedNote && handleViewHistory(selectedNote)}
-                        isMaximized={isMaximized}
-                        onToggleMaximize={onToggleMaximize}
-                        isRecycle={isRecycle}
-                        initialPreviewMode={initialPreviewMode}
-                        onWikiLinkClick={handleWikiLinkClick}
-                        defaultFolderPath={currentPath}
-                    />
+                    <TocProvider>
+                        <NoteEditor
+                            vault={vault}
+                            note={selectedNote}
+                            onBack={handleBack}
+                            onNavigateToFolder={handleNavigateToFolder}
+                            onSaveSuccess={handleSaveSuccess}
+                            onViewHistory={() => selectedNote && handleViewHistory(selectedNote)}
+                            isMaximized={isMaximized}
+                            onToggleMaximize={onToggleMaximize}
+                            isRecycle={isRecycle}
+                            initialPreviewMode={initialPreviewMode}
+                            onWikiLinkClick={handleWikiLinkClick}
+                            defaultFolderPath={currentPath}
+                        />
+                        <TableOfContents />
+                    </TocProvider>
                 )
             )}
 
