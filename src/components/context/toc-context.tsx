@@ -71,7 +71,13 @@ export const TocProvider: React.FC<{ children: React.ReactNode }> = ({ children 
    * 按 id 查找并移除
    */
   const unregisterHeading = useCallback((id: string) => {
-    headingsRef.current = headingsRef.current.filter(h => h.id !== id);
+    const nextHeadings = headingsRef.current.filter(h => h.id !== id);
+
+    if (nextHeadings.length === headingsRef.current.length) {
+      return;
+    }
+
+    headingsRef.current = nextHeadings;
     setHeadings([...headingsRef.current]);
   }, []);
 

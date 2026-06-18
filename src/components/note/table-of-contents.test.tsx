@@ -1,19 +1,39 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { TableOfContents } from './table-of-contents';
 import { TocProvider, useToc } from '@/components/context/toc-context';
 import React from 'react';
 
 // Mock IntersectionObserver（jsdom 不支持）
+let latestIntersectionObserverCallback: IntersectionObserverCallback | null = null;
+
 class MockIntersectionObserver {
   observe = vi.fn();
   unobserve = vi.fn();
   disconnect = vi.fn();
-  constructor(_callback: IntersectionObserverCallback, _options?: IntersectionObserverInit) {}
+  constructor(callback: IntersectionObserverCallback, _options?: IntersectionObserverInit) {
+    latestIntersectionObserverCallback = callback;
+  }
+}
+
+/**
+ * 触发最近一次创建的 IntersectionObserver 回调。
+ *
+ * @param entries - 要投递给观察器的交叉状态列表
+ */
+function triggerIntersection(entries: Array<Partial<IntersectionObserverEntry> & { target: Element; isIntersecting: boolean }>) {
+  if (!latestIntersectionObserverCallback) {
+    throw new Error('IntersectionObserver callback is not registered');
+  }
+
+  latestIntersectionObserverCallback(entries as IntersectionObserverEntry[], {} as IntersectionObserver);
 }
 
 beforeEach(() => {
+  vi.restoreAllMocks();
   vi.stubGlobal('IntersectionObserver', MockIntersectionObserver);
+  window.history.replaceState(null, '', '/?notes&vault=test#existing-hash');
+  latestIntersectionObserverCallback = null;
 });
 
 // Mock motion 库
@@ -139,5 +159,227 @@ describe('TableOfContents', () => {
 
     expect(screen.getByText('Depth 1')).toBeInTheDocument();
     expect(screen.queryByText('Depth 4')).not.toBeInTheDocument();
+  });
+
+  it('点击目录项时不应修改 URL hash', () => {
+    const scrollToSpy = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+
+    const heading = document.createElement('h1');
+    heading.id = 'heading-1';
+    heading.textContent = 'First Heading';
+    heading.getBoundingClientRect = vi.fn(() => ({
+      top: 240,
+      bottom: 0,
+      left: 0,
+      right: 0,
+      width: 0,
+      height: 0,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    }));
+    document.body.appendChild(heading);
+
+    const TestHelper = () => {
+      const { registerHeading } = useToc();
+
+      React.useEffect(() => {
+        registerHeading({ id: 'heading-1', level: 1, text: 'First Heading', element: heading });
+      }, [registerHeading]);
+
+      return null;
+    };
+
+    render(
+      <TocProvider>
+        <TestHelper />
+        <TableOfContents />
+      </TocProvider>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /目录/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'First Heading' }));
+
+    expect(scrollToSpy).toHaveBeenCalledWith({ top: 160, behavior: 'smooth' });
+    expect(window.location.hash).toBe('#existing-hash');
+  });
+
+  it('内部滚动预览中点击目录项时应滚动最近的预览容器', () => {
+    const windowScrollToSpy = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+
+    const previewContainer = document.createElement('div');
+    previewContainer.className = 'markdown-preview';
+    previewContainer.scrollTop = 40;
+    previewContainer.getBoundingClientRect = vi.fn(() => ({
+      top: 100,
+      bottom: 500,
+      left: 0,
+      right: 0,
+      width: 0,
+      height: 400,
+      x: 0,
+      y: 100,
+      toJSON: () => ({}),
+    }));
+    Object.defineProperty(previewContainer, 'clientHeight', { value: 400, configurable: true });
+    Object.defineProperty(previewContainer, 'scrollHeight', { value: 800, configurable: true });
+    const previewScrollToSpy = vi.fn();
+    Object.defineProperty(previewContainer, 'scrollTo', {
+      value: previewScrollToSpy,
+      configurable: true,
+    });
+
+    const heading = document.createElement('h1');
+    heading.id = 'heading-in-preview';
+    heading.textContent = 'Preview Heading';
+    heading.getBoundingClientRect = vi.fn(() => ({
+      top: 220,
+      bottom: 260,
+      left: 0,
+      right: 0,
+      width: 0,
+      height: 40,
+      x: 0,
+      y: 220,
+      toJSON: () => ({}),
+    }));
+    previewContainer.appendChild(heading);
+    document.body.appendChild(previewContainer);
+
+    const TestHelper = () => {
+      const { registerHeading } = useToc();
+
+      React.useEffect(() => {
+        registerHeading({ id: 'heading-in-preview', level: 1, text: 'Preview Heading', element: heading });
+      }, [registerHeading]);
+
+      return null;
+    };
+
+    render(
+      <TocProvider>
+        <TestHelper />
+        <TableOfContents />
+      </TocProvider>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /目录/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'Preview Heading' }));
+
+    expect(previewScrollToSpy).toHaveBeenCalledWith({ top: 80, behavior: 'smooth' });
+    expect(windowScrollToSpy).not.toHaveBeenCalled();
+  });
+
+  it('预览容器不可滚动时应回退到 window 滚动', () => {
+    const windowScrollToSpy = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+
+    const previewContainer = document.createElement('div');
+    previewContainer.className = 'markdown-preview';
+    previewContainer.scrollTop = 0;
+    previewContainer.getBoundingClientRect = vi.fn(() => ({
+      top: 100,
+      bottom: 500,
+      left: 0,
+      right: 0,
+      width: 0,
+      height: 400,
+      x: 0,
+      y: 100,
+      toJSON: () => ({}),
+    }));
+    Object.defineProperty(previewContainer, 'clientHeight', { value: 400, configurable: true });
+    Object.defineProperty(previewContainer, 'scrollHeight', { value: 400, configurable: true });
+    const previewScrollToSpy = vi.fn();
+    Object.defineProperty(previewContainer, 'scrollTo', {
+      value: previewScrollToSpy,
+      configurable: true,
+    });
+
+    const heading = document.createElement('h1');
+    heading.id = 'non-scrollable-preview-heading';
+    heading.textContent = 'Non Scrollable Preview Heading';
+    heading.getBoundingClientRect = vi.fn(() => ({
+      top: 260,
+      bottom: 300,
+      left: 0,
+      right: 0,
+      width: 0,
+      height: 40,
+      x: 0,
+      y: 260,
+      toJSON: () => ({}),
+    }));
+    previewContainer.appendChild(heading);
+    document.body.appendChild(previewContainer);
+
+    const TestHelper = () => {
+      const { registerHeading } = useToc();
+
+      React.useEffect(() => {
+        registerHeading({
+          id: 'non-scrollable-preview-heading',
+          level: 1,
+          text: 'Non Scrollable Preview Heading',
+          element: heading,
+        });
+      }, [registerHeading]);
+
+      return null;
+    };
+
+    render(
+      <TocProvider>
+        <TestHelper />
+        <TableOfContents />
+      </TocProvider>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /目录/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'Non Scrollable Preview Heading' }));
+
+    expect(previewScrollToSpy).not.toHaveBeenCalled();
+    expect(windowScrollToSpy).toHaveBeenCalledWith({ top: 180, behavior: 'smooth' });
+  });
+
+  it('多个标题同时可见时应激活较靠后的当前标题', () => {
+    const firstHeading = document.createElement('h1');
+    firstHeading.id = 'heading-1';
+    firstHeading.textContent = 'First Heading';
+    document.body.appendChild(firstHeading);
+
+    const secondHeading = document.createElement('h2');
+    secondHeading.id = 'heading-2';
+    secondHeading.textContent = 'Second Heading';
+    document.body.appendChild(secondHeading);
+
+    const TestHelper = () => {
+      const { registerHeading } = useToc();
+
+      React.useEffect(() => {
+        registerHeading({ id: 'heading-1', level: 1, text: 'First Heading', element: firstHeading });
+        registerHeading({ id: 'heading-2', level: 2, text: 'Second Heading', element: secondHeading });
+      }, [registerHeading]);
+
+      return null;
+    };
+
+    render(
+      <TocProvider>
+        <TestHelper />
+        <TableOfContents />
+      </TocProvider>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /目录/i }));
+
+    act(() => {
+      triggerIntersection([
+        { target: firstHeading, isIntersecting: true },
+        { target: secondHeading, isIntersecting: true },
+      ]);
+    });
+
+    expect(screen.getByRole('button', { name: 'Second Heading' })).toHaveAttribute('aria-current', 'location');
+    expect(screen.getByRole('button', { name: 'First Heading' })).not.toHaveAttribute('aria-current');
   });
 });

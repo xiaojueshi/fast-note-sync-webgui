@@ -26,6 +26,7 @@ import { useToc } from "@/components/context/toc-context";
 import { cn } from "@/lib/utils";
 import { getBrowserLang } from "@/i18n/utils";
 import env from "@/env.ts";
+import { createHeadingIdGenerator, createHeadingSlug } from "./heading-id";
 
 const CALLOUT_ICONS: Record<string, LucideIcon> = {
     "pencil": Pencil,
@@ -126,42 +127,22 @@ const CALLOUT_STYLES: Record<string, { border: string; bg: string; text: string;
     cite:     { border: "border-gray-400",   bg: "bg-gray-50 dark:bg-gray-950/30",    text: "text-gray-400",   icon: "quote" },
 };
 
-/** 已使用的标题 ID 集合，用于去重 */
-const usedHeadingIds = new Set<string>();
+const HeadingIdContext = React.createContext<((text: string, stableKey?: string) => string) | null>(null);
 
 /**
- * 生成标题的唯一 ID
- * 优先使用文本内容生成 kebab-case ID
- * 如果 ID 已存在，则添加数字后缀确保唯一性
+ * 根据 Markdown 节点位置生成稳定 key。
+ * 当同一份文档重复渲染时，可借此复用同一个标题锚点 ID。
  *
- * @param text - 标题文本内容
- * @returns 唯一的 ID 字符串
+ * @param node - ReactMarkdown 传入的 AST 节点
+ * @returns 稳定节点 key；若缺少位置信息则返回 null
  */
-export function generateHeadingId(text: string): string {
-    // 生成基础 ID：转小写，替换空格和特殊字符为连字符
-    let baseId = text
-        .toLowerCase()
-        .replace(/[^\w\u4e00-\u9fff]+/g, '-')
-        .replace(/^-+|-+$/g, '');
-
-    // 如果基础 ID 已存在，添加数字后缀
-    let id = baseId;
-    let counter = 1;
-    while (usedHeadingIds.has(id)) {
-        id = `${baseId}-${counter}`;
-        counter++;
+function getHeadingStableKey(node: { position?: { start?: { line?: number; column?: number; offset?: number } } } | undefined): string | null {
+    const start = node?.position?.start;
+    if (!start) {
+        return null;
     }
 
-    usedHeadingIds.add(id);
-    return id;
-}
-
-/**
- * 重置已使用的标题 ID 集合
- * 应在 Markdown 内容变化时调用
- */
-export function resetHeadingIds(): void {
-    usedHeadingIds.clear();
+    return `${start.line ?? 0}:${start.column ?? 0}:${start.offset ?? 0}`;
 }
 
 /**
@@ -1033,10 +1014,12 @@ function extractCalloutInfo(children: React.ReactNode): {
  * @returns 带注册逻辑的标题组件
  */
 function createHeadingComponent(Tag: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6', defaultClassName: string, level: number) {
-    return function HeadingComponent({ node: _node, className, children, ...props }: any) {
+    return function HeadingComponent({ node, className, children, ...props }: any) {
         const { registerHeading, unregisterHeading } = useToc();
+        const getHeadingId = React.useContext(HeadingIdContext);
         const text = extractTextFromChildren(children);
-        const id = generateHeadingId(text);
+        const stableKey = getHeadingStableKey(node);
+        const id = getHeadingId ? getHeadingId(text, stableKey ?? undefined) : createHeadingSlug(text);
 
         useEffect(() => {
             if (!text.trim()) return;
@@ -1239,21 +1222,31 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
     content: string;
     components?: Components;
 }) {
+    /**
+     * 为当前文档中的标题生成稳定且唯一的锚点 ID。
+     *
+     * @param text - 标题文本内容
+     * @returns 当前渲染树内唯一的标题 ID
+     */
+    const getHeadingId = useMemo(() => createHeadingIdGenerator(), [content]);
+
     const mergedComponents = useMemo(() => ({
         ...markdownComponents,
         ...additionalComponents,
     }), [additionalComponents]);
 
     return (
-        <ReactMarkdown
-            remarkPlugins={REMARK_PLUGINS}
-            rehypePlugins={REHYPE_PLUGINS}
-            components={mergedComponents}
-            allowedElements={undefined}
-            unwrapDisallowed
-        >
-            {content}
-        </ReactMarkdown>
+        <HeadingIdContext.Provider value={getHeadingId}>
+            <ReactMarkdown
+                remarkPlugins={REMARK_PLUGINS}
+                rehypePlugins={REHYPE_PLUGINS}
+                components={mergedComponents}
+                allowedElements={undefined}
+                unwrapDisallowed
+            >
+                {content}
+            </ReactMarkdown>
+        </HeadingIdContext.Provider>
     );
 });
 
@@ -1335,11 +1328,6 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
                 editorViewRef.current = null;
             };
         }, []);
-
-        // 内容变化时重置已使用的标题 ID
-        useEffect(() => {
-            resetHeadingIds();
-        }, [value]);
 
         const editorExtensions = useMemo(() => {
             const extensions = [
