@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ZoomIn, ZoomOut, RotateCcw, X } from "lucide-react";
-import { Dialog, DialogContent, DialogOverlay, DialogPortal } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogOverlay, DialogPortal, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
 /**
@@ -70,31 +70,39 @@ export function MermaidFullscreenModal({
   /**
    * 处理鼠标滚轮缩放
    * 以鼠标位置为中心进行缩放
+   * 使用原生事件监听以支持 preventDefault
    */
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault();
-
+  useEffect(() => {
     const container = containerRef.current;
-    if (!container) return;
+    if (!container || !open) return;
 
-    const rect = container.getBoundingClientRect();
-    // 鼠标相对于容器的位置
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
 
-    setViewState((prev) => {
-      // 计算新的缩放比例
-      const delta = e.deltaY > 0 ? -SCALE_STEP : SCALE_STEP;
-      const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, prev.scale + delta));
+      const rect = container.getBoundingClientRect();
+      // 鼠标相对于容器的位置
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
 
-      // 计算缩放中心偏移，保持鼠标位置不变
-      const scaleRatio = newScale / prev.scale;
-      const newOffsetX = mouseX - (mouseX - prev.offsetX) * scaleRatio;
-      const newOffsetY = mouseY - (mouseY - prev.offsetY) * scaleRatio;
+      setViewState((prev) => {
+        // 计算新的缩放比例
+        const delta = e.deltaY > 0 ? -SCALE_STEP : SCALE_STEP;
+        const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, prev.scale + delta));
 
-      return { scale: newScale, offsetX: newOffsetX, offsetY: newOffsetY };
-    });
-  }, []);
+        // 计算缩放中心偏移，保持鼠标位置不变
+        const scaleRatio = newScale / prev.scale;
+        const newOffsetX = mouseX - (mouseX - prev.offsetX) * scaleRatio;
+        const newOffsetY = mouseY - (mouseY - prev.offsetY) * scaleRatio;
+
+        return { scale: newScale, offsetX: newOffsetX, offsetY: newOffsetY };
+      });
+    };
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    return () => {
+      container.removeEventListener('wheel', handleWheel);
+    };
+  }, [open]);
 
   /**
    * 处理鼠标按下事件 - 开始拖拽
@@ -116,13 +124,14 @@ export function MermaidFullscreenModal({
     if (!isDragging) return;
 
     const handleMouseMoveDoc = (e: MouseEvent) => {
-      if (!dragStartRef.current) return;
-      const dx = e.clientX - dragStartRef.current.x;
-      const dy = e.clientY - dragStartRef.current.y;
+      const dragStart = dragStartRef.current;
+      if (!dragStart) return;
+      const dx = e.clientX - dragStart.x;
+      const dy = e.clientY - dragStart.y;
       setViewState((prev) => ({
         ...prev,
-        offsetX: dragStartRef.current!.offsetX + dx,
-        offsetY: dragStartRef.current!.offsetY + dy,
+        offsetX: dragStart.offsetX + dx,
+        offsetY: dragStart.offsetY + dy,
       }));
     };
 
@@ -174,6 +183,7 @@ export function MermaidFullscreenModal({
           className="sm:max-w-none w-screen h-screen max-w-none p-0 gap-0 border-none"
           aria-describedby={undefined}
         >
+          <DialogTitle className="sr-only">Mermaid 图全屏查看</DialogTitle>
           {/* 工具栏 */}
           <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <span className="text-sm text-muted-foreground">
@@ -220,7 +230,6 @@ export function MermaidFullscreenModal({
             ref={containerRef}
             className="w-full h-full overflow-hidden pt-12"
             style={{ cursor: isDragging ? "grabbing" : "grab" }}
-            onWheel={handleWheel}
             onMouseDown={handleMouseDown}
           >
             <div

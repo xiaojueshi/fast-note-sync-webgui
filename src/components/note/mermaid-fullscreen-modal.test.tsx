@@ -35,6 +35,9 @@ vi.mock("@/components/ui/dialog", () => ({
   DialogContent: ({ children, className }: MockDialogContentProps) => (
     <div data-testid="content" className={className}>{children}</div>
   ),
+  DialogTitle: ({ children, className }: { children: ReactNode; className?: string }) => (
+    <h2 className={className}>{children}</h2>
+  ),
 }));
 
 vi.mock("@/components/ui/button", () => ({
