@@ -27,16 +27,18 @@ import { Badge } from "../ui/badge"
 export function UserManagment() {
   const { t } = useTranslation()
   const { users, isLoading, error, refresh } = useUsers()
-  const [createUserOpen, setCreateUserOpen] = useState(false)
-  const [editUserOpen, setEditUserOpen] = useState<UserInfo | null>(null)
+  const [createUserFormOpen, setCreateUserFormOpen] = useState(false)
+  const [editUserFormOpen, setEditUserFormOpen] = useState<UserInfo | null>(null)
 
-  const onUserUpdated = () => {
-    setEditUserOpen(null)
-    refresh()
+  const onCreateUserFormClose = (needRefresh: boolean) => {
+    setCreateUserFormOpen(false)
+    if (needRefresh) {
+      refresh()
+    }
   }
 
-  const onUserCreated = (needRefresh: boolean) => {
-    setCreateUserOpen(false)
+  const onEditUserFormClose = (needRefresh: boolean) => {
+    setEditUserFormOpen(null)
     if (needRefresh) {
       refresh()
     }
@@ -44,24 +46,24 @@ export function UserManagment() {
 
   return (
     <div className="rounded-xl border border-border bg-card p-6 space-y-4 custom-shadow">
-      <Dialog open={createUserOpen} onOpenChange={setCreateUserOpen}>
+      <Dialog open={createUserFormOpen} onOpenChange={setCreateUserFormOpen}>
         <DialogContent className="max-w-md rounded-xl">
           <DialogHeader>
             <DialogTitle>{t("ui.users.createUser")}</DialogTitle>
           </DialogHeader>
-          <CreateUser onClose={onUserCreated} />
+          <CreateUser onClose={onCreateUserFormClose} />
         </DialogContent>
       </Dialog>
       <Dialog
-        open={editUserOpen != null}
-        onOpenChange={() => setEditUserOpen(null)}
+        open={editUserFormOpen != null}
+        onOpenChange={() => setEditUserFormOpen(null)}
       >
         <DialogContent className="max-w-md rounded-xl">
           <DialogHeader>
             <DialogTitle>{t("ui.users.editUser")}</DialogTitle>
           </DialogHeader>
-          {editUserOpen && (
-            <EditUser user={editUserOpen} onClose={onUserUpdated} />
+          {editUserFormOpen && (
+            <EditUser user={editUserFormOpen} onClose={onEditUserFormClose} />
           )}
         </DialogContent>
       </Dialog>
@@ -72,7 +74,7 @@ export function UserManagment() {
         </h2>
         <Button
           onClick={() => {
-            setCreateUserOpen(true)
+            setCreateUserFormOpen(true)
           }}
           className="rounded-xl"
         >
@@ -147,7 +149,7 @@ export function UserManagment() {
                       size="icon"
                       className="rounded-xl shrink-0"
                       onClick={() => {
-                        setEditUserOpen(user)
+                        setEditUserFormOpen(user)
                       }}
                       title={t("ui.common.delete")}
                     >
