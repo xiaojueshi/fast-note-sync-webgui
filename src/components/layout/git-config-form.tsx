@@ -58,7 +58,7 @@ export function GitConfigForm({ config, vaults, onSubmit, onCancel }: GitConfigF
             includeConfig: false,
             configSyncRules: [".obsidian/appearance.json", ".obsidian/community-plugins.json"],
         }
-    ), [config?.id, config?.vault, config?.repoUrl, config?.branch, config?.username, config?.password, config?.isEnabled, config?.delay, config?.retentionDays])
+    ), [config])
 
     const { register, handleSubmit, formState: { errors, isSubmitting }, setValue, getValues, reset, watch, control } = useForm<GitSyncConfigRequest>({
         resolver: zodResolver(schema),
@@ -249,7 +249,7 @@ export function GitConfigForm({ config, vaults, onSubmit, onCancel }: GitConfigF
 
                         {errors.configSyncRules && (
                             <p className="text-[11px] text-destructive mt-1">
-                                {(errors as any).configSyncRules.root?.message || (errors as any).configSyncRules.message}
+                                {(errors.configSyncRules as { root?: { message?: string }; message?: string }).root?.message || (errors.configSyncRules as { message?: string }).message}
                             </p>
                         )}
                     </div>

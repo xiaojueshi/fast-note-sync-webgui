@@ -122,7 +122,7 @@ export function SettingList({
             <EditorWrapper initialPath="" />,
             "max-w-3xl"
         );
-    }, [vault, fetchSettings, openConfirmDialog, t]);
+    }, [vault, fetchSettings, openConfirmDialog, t, handleSaveSetting]);
 
     useEffect(() => {
         onRegisterAdd(onAdd);

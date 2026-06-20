@@ -3,7 +3,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from "@/components/ui/table";
 import { useEffect, useState, useCallback, forwardRef, useImperativeHandle } from "react";
-import { useTokenHandle, TokenLog } from "@/components/api-handle/token-handle";
+import { useTokenHandle, TokenLog, type TokenInfo } from "@/components/api-handle/token-handle";
 import { useVaultHandle } from "@/components/api-handle/vault-handle";
 import { VaultType } from "@/lib/types/vault";
 import { Card, CardContent } from "@/components/ui/card";
@@ -201,7 +201,7 @@ const TokenManagerInner = (
       fetchLogs(id, 1);
     };
 
-    const onOpenEdit = (token: any) => {
+    const onOpenEdit = (token: TokenInfo) => {
       setEditingTokenId(token.id);
       setIsEditMode(true);
       setNewClientType(token.clientType);

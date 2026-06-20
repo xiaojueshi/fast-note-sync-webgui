@@ -196,7 +196,7 @@ function App() {
         setConfigLoaded(true)
       }
     }
-  }, [onFontsUpdate, t])
+  }, [onFontsUpdate])
 
   useEffect(() => {
     let isMounted = true

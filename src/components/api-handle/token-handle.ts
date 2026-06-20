@@ -243,7 +243,7 @@ export function useTokenHandle() {
       );
       const payload = JSON.parse(jsonPayload);
       return payload.tokenId || payload.tokenID || payload.tid; 
-    } catch (e) {
+    } catch {
       return null;
     }
   }, [token]);

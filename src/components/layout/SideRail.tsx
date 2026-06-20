@@ -1,4 +1,4 @@
-import { Library, NotepadText, ArchiveX, Settings, DatabaseBackup, GitPullRequestArrow, Layers } from "lucide-react";
+import { Library, NotepadText, ArchiveX, Settings, DatabaseBackup, GitPullRequestArrow, Layers, type LucideIcon } from "lucide-react";
 import { ProfileButton } from "@/components/navigation/ProfileButton";
 import { useAppStore, type ModuleId } from "@/stores/app-store";
 import { NavItem } from "@/components/navigation/NavItem";
@@ -32,7 +32,7 @@ export function SideRail({ isAdmin, onLogout, className }: SideRailProps) {
   // 导航项配置
   const navItems: Array<{
     id: ModuleId
-    icon: any
+    icon: LucideIcon
     labelKey: string
     adminOnly?: boolean
     isPlanned?: boolean

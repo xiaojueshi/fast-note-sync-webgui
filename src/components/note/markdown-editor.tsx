@@ -257,7 +257,7 @@ mark {
  * contentBody: 剥离了 Frontmatter 后的正文内容
  */
 export interface ParsedFrontmatter {
-    properties: Record<string, any>;
+    properties: Record<string, string | number | boolean | (string | number | boolean)[]>;
     contentBody: string;
 }
 
@@ -266,7 +266,7 @@ export interface ParsedFrontmatter {
  * 
  * 辅助函数：解析 YAML 值的类型（布尔、数字、字符串）
  */
-function parseSingleValue(val: string): any {
+function parseSingleValue(val: string): string | number | boolean {
     val = val.trim();
     // Strip surrounding quotes
     if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
@@ -312,7 +312,7 @@ export function parseFrontmatter(content: string): ParsedFrontmatter {
     const frontmatterLines = lines.slice(1, endIdx);
     const contentBody = lines.slice(endIdx + 1).join("\n");
 
-    const properties: Record<string, any> = {};
+    const properties: Record<string, string | number | boolean> = {};
     let currentKey: string | null = null;
 
     for (const line of frontmatterLines) {
@@ -326,10 +326,12 @@ export function parseFrontmatter(content: string): ParsedFrontmatter {
         const listMatch = line.match(/^\s*-\s+(.*)$/);
         if (listMatch && currentKey) {
             const itemVal = parseSingleValue(listMatch[1]);
-            if (!Array.isArray(properties[currentKey])) {
-                properties[currentKey] = [];
+            const current = properties[currentKey];
+            if (!Array.isArray(current)) {
+                (properties as unknown as Record<string, (string | number | boolean)[]>)[currentKey] = [itemVal];
+            } else {
+                (current as (string | number | boolean)[]).push(itemVal);
             }
-            properties[currentKey].push(itemVal);
             continue;
         }
 
@@ -352,9 +354,9 @@ export function parseFrontmatter(content: string): ParsedFrontmatter {
             if (rawVal.startsWith("[") && rawVal.endsWith("]")) {
                 const inner = rawVal.slice(1, -1).trim();
                 if (!inner) {
-                    properties[currentKey] = [];
+                    (properties as unknown as Record<string, (string | number | boolean)[]>)[currentKey] = [];
                 } else {
-                    properties[currentKey] = inner.split(",").map(x => parseSingleValue(x));
+                    (properties as unknown as Record<string, (string | number | boolean)[]>)[currentKey] = inner.split(",").map(x => parseSingleValue(x));
                 }
             } else {
                 properties[currentKey] = parseSingleValue(rawVal);
@@ -398,7 +400,7 @@ function getPropertyIcon(type: string): LucideIcon {
  * 
  * 根据属性键（key）和值（value）自动识别 Obsidian Frontmatter 属性的类型
  */
-function detectPropertyType(key: string, value: any): string {
+function detectPropertyType(key: string, value: string | number | boolean | (string | number | boolean)[]): string {
     const lowerKey = key.toLowerCase();
     if (lowerKey === "tags" || lowerKey === "tag") {
         return "tags";
@@ -439,7 +441,7 @@ function detectPropertyType(key: string, value: any): string {
  * 
  * 根据 Frontmatter 属性的不同类型，渲染对应具有精美现代样式的属性值
  */
-function renderValueField(type: string, value: any): React.ReactNode {
+function renderValueField(type: string, value: string | number | boolean | (string | number | boolean)[]): React.ReactNode {
     if (value === undefined || value === null || value === "") {
         return <span className="text-xs text-muted-foreground/30 italic">Empty</span>;
     }
@@ -447,7 +449,7 @@ function renderValueField(type: string, value: any): React.ReactNode {
     switch (type) {
         case "tags": {
             const list = Array.isArray(value) ? value : [value];
-            return list.map((tag: any, idx: number) => {
+            return list.map((tag: string | number | boolean, idx: number) => {
                 const tagStr = String(tag).trim();
                 if (!tagStr) return null;
                 return (
@@ -463,7 +465,7 @@ function renderValueField(type: string, value: any): React.ReactNode {
         }
         case "aliases": {
             const list = Array.isArray(value) ? value : [value];
-            return list.map((alias: any, idx: number) => {
+            return list.map((alias: string | number | boolean, idx: number) => {
                 const aliasStr = String(alias).trim();
                 if (!aliasStr) return null;
                 return (
@@ -477,7 +479,8 @@ function renderValueField(type: string, value: any): React.ReactNode {
             });
         }
         case "list": {
-            return value.map((item: any, idx: number) => {
+            const list = Array.isArray(value) ? value : [value];
+            return list.map((item: string | number | boolean, idx: number) => {
                 const itemStr = String(item).trim();
                 if (!itemStr) return null;
                 return (
@@ -507,19 +510,19 @@ function renderValueField(type: string, value: any): React.ReactNode {
             );
         }
         case "number": {
-            return <span className="font-mono text-sm text-foreground/90 font-medium">{value}</span>;
+            return <span className="font-mono text-sm text-foreground/90 font-medium">{String(value)}</span>;
         }
         case "date": {
             return (
                 <span className="font-mono text-xs text-foreground/90 bg-sky-500/5 border border-sky-500/10 rounded px-1.5 py-0.5 font-medium">
-                    {value}
+                    {String(value)}
                 </span>
             );
         }
         case "datetime": {
             return (
                 <span className="font-mono text-xs text-foreground/90 bg-indigo-500/5 border border-indigo-500/10 rounded px-1.5 py-0.5 font-medium">
-                    {value.replace("T", " ")}
+                    {typeof value === 'string' ? value.replace("T", " ") : String(value)}
                 </span>
             );
         }

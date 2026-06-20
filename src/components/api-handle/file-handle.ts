@@ -412,7 +412,7 @@ export function useFileHandle() {
         vault: string,
         path: string,
         file: File,
-        callback: (data: any | null) => void
+        callback: (data: Record<string, unknown> | null) => void
     ) => {
         try {
             const formData = new FormData();
@@ -445,7 +445,7 @@ export function useFileHandle() {
                 return;
             }
 
-            const res: { code: number; message: string; data?: any } = await response.json();
+            const res: { code: number; message: string; data?: Record<string, unknown> } = await response.json();
 
             if (res.code > 0 && res.code <= 200) {
                 toast.success(res.message);

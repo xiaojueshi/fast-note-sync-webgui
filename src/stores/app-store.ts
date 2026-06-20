@@ -126,7 +126,7 @@ export const useAppStore = create<AppState>()(
         if (!state) return;
 
         // 1. 旧默认值迁移
-        if (state.currentModule === 'vaults' as any) {
+        if (state.currentModule === 'vaults' as ModuleId) {
           state.currentModule = 'dashboard';
         }
 

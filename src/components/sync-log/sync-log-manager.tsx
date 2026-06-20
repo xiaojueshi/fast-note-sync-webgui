@@ -71,7 +71,7 @@ export function SyncLogManager({ vault, onVaultChange }: SyncLogManagerProps) {
             setFilterVault("all");
             setCurrentPage(1);
         }
-    }, [vault]);
+    }, [vault, filterVault]);
 
     const handleVaultFilterChange = (v: string) => {
         setFilterVault(v);

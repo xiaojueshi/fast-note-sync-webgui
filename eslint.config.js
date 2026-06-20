@@ -35,7 +35,20 @@ export default [
             ...reactHooks.configs.recommended.rules,
             'react-refresh/only-export-components': [
                 'warn',
-                { allowConstantExport: true, allowExportNames: ['useAuth', 'useConfirmDialog', 'useTheme'] },
+                { 
+                    allowConstantExport: true, 
+                    allowExportNames: [
+                        'useAuth', 
+                        'useConfirmDialog', 
+                        'useTheme',
+                        'parseFrontmatter',
+                        'transformObsidianSyntax',
+                        'ParsedFrontmatter',
+                        'MarkdownEditorRef',
+                        'badgeVariants',
+                        'buttonVariants',
+                    ] 
+                },
             ],
             '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
             '@typescript-eslint/no-unused-expressions': ['error', { allowShortCircuit: true, allowTernary: true }],
@@ -45,6 +58,25 @@ export default [
     // Config for Node.js files (vite, vitest configs)
     {
         files: ['*.config.{ts,js}', 'vite.config.ts', 'vitest.config.ts'],
+        languageOptions: {
+            ecmaVersion: 2020,
+            globals: {
+                ...globals.node,
+            },
+            parser: tsParser,
+        },
+        plugins: {
+            '@typescript-eslint': tsPlugin,
+        },
+        rules: {
+            ...js.configs.recommended.rules,
+            ...tsPlugin.configs.recommended.rules,
+            'no-undef': 'off',
+        },
+    },
+    // Config for scripts directory
+    {
+        files: ['scripts/**/*.ts'],
         languageOptions: {
             ecmaVersion: 2020,
             globals: {

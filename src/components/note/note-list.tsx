@@ -468,7 +468,7 @@ export function NoteList({ vault, vaults, onVaultChange, onSelectNote, onCreateN
         }
         setPage(1);
         setFilePage(1);
-    }, [debouncedKeyword, filterType, setPage]);
+    }, [debouncedKeyword, filterType, setPage, setViewMode]);
 
     useEffect(() => {
         if (isRecycle) {
@@ -536,7 +536,7 @@ export function NoteList({ vault, vaults, onVaultChange, onSelectNote, onCreateN
         });
     };
 
-    const validateName = (name: string, isPath: boolean = false): { isValid: boolean; reasonKey: string; params?: any } => {
+    const validateName = (name: string, isPath: boolean = false): { isValid: boolean; reasonKey: string; params?: Record<string, unknown> } => {
         const trimmed = name.trim();
         if (!trimmed) {
             return { isValid: false, reasonKey: "ui.validation.nameRequired" };
@@ -927,8 +927,8 @@ export function NoteList({ vault, vaults, onVaultChange, onSelectNote, onCreateN
 
         // 排序逻辑 / Sorting logic
         combined.sort((a, b) => {
-            let valA: any = a[sortBy];
-            let valB: any = b[sortBy];
+            let valA: string | number = a[sortBy];
+            let valB: string | number = b[sortBy];
 
             if (sortBy === "path") {
                 valA = a.path.toLowerCase();
@@ -941,7 +941,7 @@ export function NoteList({ vault, vaults, onVaultChange, onSelectNote, onCreateN
         });
 
         return combined;
-    }, [notes, files, viewMode, isRecycle, sortBy, sortOrder, filterType]);
+    }, [notes, files, viewMode, isRecycle, sortBy, sortOrder]);
 
     // 计算融合后列表的总记录数，用于在当前目录下过滤时的统一分页
     const displayTotalRows = viewMode === "folder" ? mergedList.length : totalRows;

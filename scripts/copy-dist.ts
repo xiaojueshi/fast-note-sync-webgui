@@ -1,4 +1,4 @@
-import { fileURLToPath, pathToFileURL } from 'url';
+import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
 import path from 'path';
 import fs from 'fs';
@@ -69,8 +69,9 @@ async function main() {
                 }
             }
             console.log('Cleanup finished.');
-        } catch (error: any) {
-            console.error(`Error during cleanup: ${error.message}`);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            console.error(`Error during cleanup: ${message}`);
             // We'll continue anyway and try to copy, which might fail but let's see.
         }
     } else {

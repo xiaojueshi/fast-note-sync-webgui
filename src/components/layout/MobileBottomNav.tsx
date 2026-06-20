@@ -1,4 +1,4 @@
-import { Library, NotepadText, Trash2, Settings, Layout } from "lucide-react";
+import { Library, NotepadText, Trash2, Settings, Layout, type LucideIcon } from "lucide-react";
 import { useAppStore, type ModuleId } from "@/stores/app-store";
 import { NavItem } from "@/components/navigation/NavItem";
 import { useTranslation } from "react-i18next";
@@ -28,7 +28,7 @@ export function MobileBottomNav({ isAdmin, className }: MobileBottomNavProps) {
   // 导航项配置
   const navItems: Array<{
     id: ModuleId
-    icon: any
+    icon: LucideIcon
     labelKey: string
     adminOnly?: boolean
   }> = [

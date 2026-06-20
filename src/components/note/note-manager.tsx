@@ -141,7 +141,7 @@ export function NoteManager({
         setCurrentPathHash("");
         setPathHashMap({});
         setShareFilter(null);
-    }, [vault]);
+    }, [vault, setCurrentPath, setCurrentPathHash]);
 
     // NoteList 始终挂载，在浏览器绘制前同步恢复滚动位置
     // NoteList is always mounted; restore scroll synchronously before browser paint
@@ -189,7 +189,7 @@ export function NoteManager({
                 toast.info(t("ui.note.wikiLinkNotFound", { target: resolvedTarget }));
             }
         });
-    }, [vault, handleNoteList, handleSelectNote, t, pathHashMap]);
+    }, [vault, handleNoteList, handleSelectNote, t, pathHashMap, setCurrentPath, setCurrentPathHash]);
 
     // 从 URL 参数中读取 notePath（新标签页打开 MD 链接时）
     useEffect(() => {

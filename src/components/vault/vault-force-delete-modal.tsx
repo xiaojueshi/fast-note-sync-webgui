@@ -22,6 +22,13 @@ interface SearchResultItem {
   isRecycle: boolean;
 }
 
+// API 返回的笔记/文件列表项类型
+interface ApiListItem {
+  id: number;
+  path: string;
+  pathHash?: string;
+}
+
 // VaultForceDeleteModalProps represents props of the modal component
 // VaultForceDeleteModalProps 物理删除模态窗的属性接口
 interface VaultForceDeleteModalProps {
@@ -97,7 +104,7 @@ export function VaultForceDeleteModal({ open, onOpenChange, vault }: VaultForceD
           const resObj = await res.json();
           const rawList = resObj.data?.list || (Array.isArray(resObj.data) ? resObj.data : []);
           if (Array.isArray(rawList)) {
-            rawList.forEach((item: any) => {
+            rawList.forEach((item: ApiListItem) => {
               notesList.push({
                 id: item.id,
                 path: item.path,
@@ -115,7 +122,7 @@ export function VaultForceDeleteModal({ open, onOpenChange, vault }: VaultForceD
           const resObj = await res.json();
           const rawList = resObj.data?.list || (Array.isArray(resObj.data) ? resObj.data : []);
           if (Array.isArray(rawList)) {
-            rawList.forEach((item: any) => {
+            rawList.forEach((item: ApiListItem) => {
               filesList.push({
                 id: item.id,
                 path: item.path,
@@ -179,7 +186,7 @@ export function VaultForceDeleteModal({ open, onOpenChange, vault }: VaultForceD
           // Dynamically remove item from list
           // 从结果列表中动态移除被删行
           setResults((prev) => prev.filter((r) => !(r.id === item.id && r.type === item.type)));
-        } catch (error: any) {
+        } catch (error) {
           toast.error(error instanceof Error ? error.message : String(error));
         }
       }
