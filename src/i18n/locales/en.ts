@@ -258,6 +258,8 @@ export default {
     "ui.note.newNote": "New Note",
     "ui.note.noNotes": "No notes yet",
     "ui.note.viewNote": "View Note",
+    "ui.note.showToc": "Show Outline",
+    "ui.note.hideToc": "Hide Outline",
     "ui.note.maximize": "Maximize",
     "ui.note.exitMaximize": "Exit Maximize",
     "ui.note.editNote": "Edit Note",

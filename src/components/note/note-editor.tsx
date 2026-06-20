@@ -1,4 +1,4 @@
-import { ArrowLeft, Folder, History, RefreshCcw, Check, X, Cloud, Fullscreen, Shrink, Eye, Pencil, Columns2, PanelLeftClose, ArrowLeftRight, Maximize, Minimize, Share2, Download } from "lucide-react";
+import { ArrowLeft, Folder, History, RefreshCcw, Check, X, Cloud, Fullscreen, Shrink, Eye, Pencil, Columns2, PanelLeftClose, ArrowLeftRight, Maximize, Minimize, Share2, Download, List } from "lucide-react";
 import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
 import { useNoteHandle } from "@/components/api-handle/note-handle";
 import { ShareModal } from "@/components/share/share-modal";
@@ -88,6 +88,12 @@ export function NoteEditor({
     const [splitReversed, setSplitReversed] = useState(false);
     const [shareModalOpen, setShareModalOpen] = useState(false);
     const titleInputRef = useRef<HTMLInputElement>(null);
+    const [showToc, setShowToc] = useState(() => {
+        if (typeof window !== "undefined") {
+            return localStorage.getItem("fns_show_toc") !== "false";
+        }
+        return true;
+    });
 
     // content state 变化时同步 ref（加载笔记、重置时）
     useEffect(() => {
@@ -598,6 +604,24 @@ export function NoteEditor({
                             </Button>
                         </Tooltip>
                     )}
+                    {note && viewLayout === "single" && isPreviewMode && (
+                        <Tooltip content={showToc ? t("ui.note.hideToc", { defaultValue: "Hide Outline" }) : t("ui.note.showToc", { defaultValue: "Show Outline" })} side="bottom" delay={200}>
+                            <Button
+                                onClick={() => {
+                                    setShowToc(prev => {
+                                        const next = !prev;
+                                        localStorage.setItem("fns_show_toc", String(next));
+                                        return next;
+                                    });
+                                }}
+                                variant={showToc ? "default" : "outline"}
+                                size="icon"
+                                className="rounded-lg sm:rounded-xl h-7 w-7 sm:h-10 sm:w-10"
+                            >
+                                <List className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                            </Button>
+                        </Tooltip>
+                    )}
                     {note && !isRecycle && (
                         <Tooltip content={viewLayout === "split" ? t("ui.note.singlePanel", { defaultValue: "Single panel" }) : t("ui.note.splitPanel", { defaultValue: "Split panel" })} side="bottom" delay={200}>
                             <Button
@@ -759,7 +783,7 @@ export function NoteEditor({
                                 />
                             </Suspense>
                         </div>
-                        {isPreviewMode && (
+                        {isPreviewMode && showToc && (
                             <TableOfContents isInline={true} className="hidden lg:flex shrink-0 w-60" />
                         )}
                     </div>

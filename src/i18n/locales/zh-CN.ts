@@ -258,6 +258,8 @@ export default {
     "ui.note.newNote": "新建笔记",
     "ui.note.noNotes": "暂无笔记",
     "ui.note.viewNote": "查看笔记",
+    "ui.note.showToc": "显示大纲",
+    "ui.note.hideToc": "隐藏大纲",
     "ui.note.maximize": "最大化",
     "ui.note.exitMaximize": "退出最大化",
     "ui.note.editNote": "编辑笔记",
