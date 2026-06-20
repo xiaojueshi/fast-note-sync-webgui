@@ -1041,7 +1041,7 @@ function createHeadingComponent(Tag: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6', de
 
         return React.createElement(Tag, {
             id,
-            className: cn(defaultClassName, className),
+            className: cn(defaultClassName, "scroll-mt-24", className),
             ...props,
         }, children);
     };

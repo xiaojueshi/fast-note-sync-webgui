@@ -45,6 +45,8 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({
   const { headings, activeId, setActiveId } = useToc();
   const [isOpen, setIsOpen] = useState(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
+  const isProgrammaticScrollRef = useRef(false);
+  const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 过滤超出深度的标题
   const filteredHeadings = headings.filter(h => h.level <= maxDepth);
@@ -54,12 +56,11 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({
    * 使用 smooth 行为实现平滑滚动
    */
   const scrollToHeading = useCallback((id: string) => {
-    const element = document.getElementById(id);
+    const element = headings.find(h => h.id === id)?.element || document.getElementById(id);
     if (element) {
-      const top = element.getBoundingClientRect().top + window.scrollY - 80;
-      window.scrollTo({ top, behavior: 'smooth' });
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  }, []);
+  }, [headings]);
 
   // 设置 IntersectionObserver 监听标题可见性
   useEffect(() => {
@@ -71,21 +72,36 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({
     // 没有标题时不创建 observer
     if (filteredHeadings.length === 0) return;
 
+    // 记录当前可见的标题
+    const visibleHeadings = new Set<string>();
+
     // 创建新的 observer
     observerRef.current = new IntersectionObserver(
       (entries) => {
-        // 找到第一个可见的标题
-        for (const entry of entries) {
+        if (isProgrammaticScrollRef.current) return;
+
+        // 更新可见状态
+        entries.forEach(entry => {
           if (entry.isIntersecting) {
-            setActiveId(entry.target.id);
-            break;
+            visibleHeadings.add(entry.target.id);
+          } else {
+            visibleHeadings.delete(entry.target.id);
+          }
+        });
+
+        // 如果有可见的标题，选中在文档中最靠前的一个
+        if (visibleHeadings.size > 0) {
+          const firstVisible = filteredHeadings.find(h => visibleHeadings.has(h.id));
+          if (firstVisible) {
+            setActiveId(firstVisible.id);
           }
         }
       },
       {
-        // 视口偏移：顶部 20%，底部 80%
-        // 使得标题在接近顶部时才被认为是"可见的"
-        rootMargin: '-20% 0px -80% 0px',
+        // 视口偏移：顶部 0px，底部缩小 60%
+        // 这意味着交叉区域为视口的顶部 40%
+        // 只有当标题进入这个区域时，才被认为是"当前阅读"的章节
+        rootMargin: '0px 0px -60% 0px',
       }
     );
 
@@ -109,8 +125,17 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({
 
   // 点击目录项
   const handleItemClick = useCallback((id: string) => {
-    scrollToHeading(id);
+    isProgrammaticScrollRef.current = true;
     setActiveId(id);
+    scrollToHeading(id);
+    
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+    // 假设平滑滚动最多耗时 1000ms
+    scrollTimeoutRef.current = setTimeout(() => {
+      isProgrammaticScrollRef.current = false;
+    }, 1000);
   }, [scrollToHeading, setActiveId]);
 
   return (
