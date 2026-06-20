@@ -302,7 +302,7 @@ function App() {
           return null
         }
         return (
-          <SystemSettings onBack={handleNavigateToVaults} />
+          <SystemSettings onBack={handleNavigateToVaults} isAdmin={isAdmin} />
         )
 
       case "sync":

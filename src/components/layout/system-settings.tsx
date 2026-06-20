@@ -20,6 +20,7 @@ import { VersionOverview } from "./version-overview";
 import { WSClientList } from "./ws-client-list";
 import { SupportList } from "./support-list";
 import { Overview } from "./overview";
+import { UserManagment } from "./user-managment";
 
 
 interface SystemConfig {
@@ -546,6 +547,8 @@ export function SystemSettings({ onBack, isDashboard = false, isAdmin = false }:
             <div className="flex flex-col gap-4">
                 {/* 版本信息 */}
                 <VersionOverview showUpgrade={!isDashboard} />
+                {/* UserManagment */}
+                {!isDashboard && isAdmin && <UserManagment />}
                 {/* 服务器系统信息 */}
                 {!isDashboard && (
                     <Overview refreshKey={overviewRefreshKey}>

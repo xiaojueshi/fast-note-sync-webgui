@@ -590,7 +590,18 @@ export default {
     "ui.obsidian.copyToken": "Copy Token",
     "ui.obsidian.copyTokenSuccess": "Token copied to clipboard",
 
-
+    // --- ui.users ---
+    "ui.users.userManagment": "User Managment",
+    "ui.users.user": "User",
+    "ui.users.userUid": "UID",
+    "ui.users.userStatus": "Status",
+    "ui.users.userStatusBlocked":"Blocked",
+    "ui.users.userStatusActive": "Active",
+    "ui.users.createUser":"Create user",
+    "ui.users.editUser": "Edit user",
+    "ui.users.userPasswordHint": "Leave blank if no password change is needed.",
+    "ui.users.userBlockedHint": "Blocked users will be unable to log in, but their data will not be deleted.",
+    "ui.users.getUserListError": "Failed to get user list",
 
     // --- ui.system ---
     "ui.system.serviceInfo": "Service Information",

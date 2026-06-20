@@ -1,4 +1,4 @@
-import * as z from "zod";
+import * as z from "zod"
 
 
 const passwordValidation = (t: (key: string) => string) => z.string().min(6, t("ui.auth.passwordMinLength"))
@@ -23,6 +23,23 @@ export const createRegisterSchema = (t: (key: string) => string) =>
       message: t("ui.auth.passwordMismatch"),
       path: ["confirmPassword"],
     })
+
+// Edit user schema
+export const createEditSchema = (t: (key: string) => string) =>
+  z.object({
+    username: z.string().min(3, t("ui.auth.usernameMinLength")),
+    email: z.string().email(t("ui.auth.emailInvalid")),
+    password: passwordValidation(t).or(z.literal("")),
+    isDeleted: z.coerce.boolean().optional().default(false),
+  })
+
+// EditFormData
+export type EditFormData = {
+  username: string
+  email: string
+  password: string
+  isDeleted: boolean
+}
 
 // 定义 LoginFormData 类型
 export type LoginFormData = {
