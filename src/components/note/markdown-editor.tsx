@@ -3,7 +3,7 @@ import "./markdown-editor.css";
 import { markdown } from "@codemirror/lang-markdown";
 import { EditorView, placeholder as cmPlaceholder } from "@codemirror/view";
 import CodeMirror from "@uiw/react-codemirror";
-import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+import React, { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import ReactMarkdown, { type Components } from "react-markdown";
 import { MermaidBlock } from "./mermaid-block";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -22,9 +22,11 @@ import {
 
 import { toast } from "@/components/common/Toast";
 import { useTheme } from "@/components/context/theme-context";
+import { useToc } from "@/components/context/toc-context";
 import { cn } from "@/lib/utils";
 import { getBrowserLang } from "@/i18n/utils";
 import env from "@/env.ts";
+import { createHeadingIdGenerator, createHeadingSlug } from "./heading-id";
 
 const CALLOUT_ICONS: Record<string, LucideIcon> = {
     "pencil": Pencil,
@@ -124,6 +126,47 @@ const CALLOUT_STYLES: Record<string, { border: string; bg: string; text: string;
     quote:    { border: "border-gray-400",   bg: "bg-gray-50 dark:bg-gray-950/30",    text: "text-gray-400",   icon: "quote" },
     cite:     { border: "border-gray-400",   bg: "bg-gray-50 dark:bg-gray-950/30",    text: "text-gray-400",   icon: "quote" },
 };
+
+const HeadingIdContext = React.createContext<((text: string, stableKey?: string) => string) | null>(null);
+
+/**
+ * 根据 Markdown 节点位置生成稳定 key。
+ * 当同一份文档重复渲染时，可借此复用同一个标题锚点 ID。
+ *
+ * @param node - ReactMarkdown 传入的 AST 节点
+ * @returns 稳定节点 key；若缺少位置信息则返回 null
+ */
+function getHeadingStableKey(node: { position?: { start?: { line?: number; column?: number; offset?: number } } } | undefined): string | null {
+    const start = node?.position?.start;
+    if (!start) {
+        return null;
+    }
+
+    return `${start.line ?? 0}:${start.column ?? 0}:${start.offset ?? 0}`;
+}
+
+/**
+ * 从 React children 中提取纯文本内容
+ * 用于生成目录项的显示文本
+ *
+ * @param children - React children 节点
+ * @returns 提取的纯文本字符串
+ */
+function extractTextFromChildren(children: React.ReactNode): string {
+    if (typeof children === 'string') {
+        return children;
+    }
+    if (typeof children === 'number') {
+        return String(children);
+    }
+    if (Array.isArray(children)) {
+        return children.map(extractTextFromChildren).join('');
+    }
+    if (React.isValidElement(children) && children.props) {
+        return extractTextFromChildren((children.props as any).children);
+    }
+    return '';
+}
 
 const CM6_BASIC_SETUP = {
     lineNumbers: false,
@@ -959,18 +1002,60 @@ function extractCalloutInfo(children: React.ReactNode): {
     };
 }
 
+// ─── 标题注册组件 ──────────────────────────────────────────
+
+/**
+ * 创建带标题注册功能的标题组件
+ * 用于 ReactMarkdown 的自定义组件
+ *
+ * @param Tag - HTML 标签名（h1-h6）
+ * @param defaultClassName - 默认样式类名
+ * @param level - 标题层级（1-6）
+ * @returns 带注册逻辑的标题组件
+ */
+function createHeadingComponent(Tag: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6', defaultClassName: string, level: number) {
+    return function HeadingComponent({ node, className, children, ...props }: any) {
+        const { registerHeading, unregisterHeading } = useToc();
+        const getHeadingId = React.useContext(HeadingIdContext);
+        const text = extractTextFromChildren(children);
+        const stableKey = getHeadingStableKey(node);
+        const id = getHeadingId ? getHeadingId(text, stableKey ?? undefined) : createHeadingSlug(text);
+
+        useEffect(() => {
+            if (!text.trim()) return;
+
+            const element = document.getElementById(id);
+            if (element) {
+                registerHeading({
+                    id,
+                    level,
+                    text: text.trim(),
+                    element,
+                });
+            }
+
+            return () => {
+                unregisterHeading(id);
+            };
+        }, [id, level, text, registerHeading, unregisterHeading]);
+
+        return React.createElement(Tag, {
+            id,
+            className: cn(defaultClassName, "scroll-mt-24", className),
+            ...props,
+        }, children);
+    };
+}
+
 // ─── React Markdown 自定义组件 ──────────────────────────────
 
 const markdownComponents: Components = {
-    h1: ({ node: _node, className, ...props }) => (
-        <h1 className={cn("mt-8 mb-4 text-3xl font-bold first:mt-0", className)} {...props} />
-    ),
-    h2: ({ node: _node, className, ...props }) => (
-        <h2 className={cn("mt-7 mb-3 text-2xl font-semibold first:mt-0", className)} {...props} />
-    ),
-    h3: ({ node: _node, className, ...props }) => (
-        <h3 className={cn("mt-6 mb-3 text-xl font-semibold first:mt-0", className)} {...props} />
-    ),
+    h1: createHeadingComponent('h1', "mt-8 mb-4 text-3xl font-bold first:mt-0", 1),
+    h2: createHeadingComponent('h2', "mt-7 mb-3 text-2xl font-semibold first:mt-0", 2),
+    h3: createHeadingComponent('h3', "mt-6 mb-3 text-xl font-semibold first:mt-0", 3),
+    h4: createHeadingComponent('h4', "mt-5 mb-2 text-lg font-semibold first:mt-0", 4),
+    h5: createHeadingComponent('h5', "mt-4 mb-2 text-base font-semibold first:mt-0", 5),
+    h6: createHeadingComponent('h6', "mt-4 mb-2 text-sm font-semibold first:mt-0", 6),
     p: ({ node: _node, className, ...props }) => (
         <p className={cn("my-3 leading-7 text-foreground/90", className)} {...props} />
     ),
@@ -1137,21 +1222,31 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
     content: string;
     components?: Components;
 }) {
+    /**
+     * 为当前文档中的标题生成稳定且唯一的锚点 ID。
+     *
+     * @param text - 标题文本内容
+     * @returns 当前渲染树内唯一的标题 ID
+     */
+    const getHeadingId = useMemo(() => createHeadingIdGenerator(), [content]);
+
     const mergedComponents = useMemo(() => ({
         ...markdownComponents,
         ...additionalComponents,
     }), [additionalComponents]);
 
     return (
-        <ReactMarkdown
-            remarkPlugins={REMARK_PLUGINS}
-            rehypePlugins={REHYPE_PLUGINS}
-            components={mergedComponents}
-            allowedElements={undefined}
-            unwrapDisallowed
-        >
-            {content}
-        </ReactMarkdown>
+        <HeadingIdContext.Provider value={getHeadingId}>
+            <ReactMarkdown
+                remarkPlugins={REMARK_PLUGINS}
+                rehypePlugins={REHYPE_PLUGINS}
+                components={mergedComponents}
+                allowedElements={undefined}
+                unwrapDisallowed
+            >
+                {content}
+            </ReactMarkdown>
+        </HeadingIdContext.Provider>
     );
 });
 

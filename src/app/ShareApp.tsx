@@ -14,6 +14,8 @@ import { Tooltip } from "@/components/ui/tooltip";
 import { AnimatedBackground } from "@/components/user/animated-background";
 import { useShareSettingsStore, COLOR_SCHEMES, ColorScheme } from "@/lib/stores/settings-store";
 import { MarkdownEditor } from "@/components/note/markdown-editor";
+import { TocProvider } from "@/components/context/toc-context";
+import { TableOfContents } from "@/components/note/table-of-contents";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { changeLang } from "@/i18n/utils";
 import { toast } from "@/components/common/Toast";
@@ -300,6 +302,7 @@ export function ShareApp() {
     if (!note) return null;
 
     return (
+        <TocProvider>
         <div className="min-h-screen bg-background relative overflow-x-hidden">
             {/* Background Animation for default Scheme */}
             {colorScheme === 'default' && (
@@ -458,6 +461,10 @@ export function ShareApp() {
                     </div>
                 </footer>
             </div>
+
+            {/* 目录浮动面板 */}
+            <TableOfContents />
         </div>
+        </TocProvider>
     );
 }
