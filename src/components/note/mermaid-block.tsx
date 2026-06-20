@@ -59,10 +59,11 @@ export function MermaidBlock({ code }: MermaidBlockProps) {
                     setError("");
                     setIsRendering(false);
                 }
-            } catch (err: any) {
+            } catch (err: unknown) {
                 console.error("Mermaid render error:", err);
                 if (isMounted) {
-                    setError(err.message || String(err));
+                    const errorMessage = err instanceof Error ? err.message : String(err);
+                    setError(errorMessage);
                     setIsRendering(false);
                 }
             }
