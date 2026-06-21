@@ -1,0 +1,91 @@
+name: Sync Frontend to Backend
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout frontend repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build frontend
+        run: pnpm run build
+
+      - name: Verify build output
+        run: |
+          if [ ! -d "dist" ] || [ -z "$(ls -A dist)" ]; then
+            echo "Error: Build failed - dist directory is empty or missing"
+            exit 1
+          fi
+          echo "Build output verified: $(find dist -type f | wc -l) files"
+
+      - name: Checkout backend repo
+        uses: actions/checkout@v4
+        with:
+          repository: haierkeys/fast-note-sync-service
+          token: ${{ secrets.BACKEND_REPO_TOKEN }}
+          path: backend
+
+      - name: Sync frontend files
+        run: |
+          set -e
+
+          # Ensure frontend directory exists
+          mkdir -p backend/frontend
+
+          # Clean old frontend files (preserve .git)
+          find backend/frontend -mindepth 1 -delete 2>/dev/null || true
+
+          # Copy new build artifacts
+          cp -r dist/* backend/frontend/
+
+          # Verify sync was successful
+          if [ ! -f "backend/frontend/index.html" ]; then
+            echo "Error: Frontend sync failed - index.html not found"
+            exit 1
+          fi
+          echo "Frontend synced: $(find backend/frontend -type f | wc -l) files"
+
+      - name: Commit and push changes
+        working-directory: backend
+        run: |
+          set -e
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add frontend/
+
+          # Check if there are changes to commit
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            # Get frontend commit info for the commit message
+            FRONTEND_SHA=$(git -C .. rev-parse --short HEAD)
+            FRONTEND_MSG=$(git -C .. log -1 --pretty=%s)
+
+            git commit -m "chore(webgui): update frontend build" -m "Frontend commit: ${FRONTEND_SHA} - ${FRONTEND_MSG}"
+
+            git push origin master
+            echo "Changes pushed successfully"
+          fi
