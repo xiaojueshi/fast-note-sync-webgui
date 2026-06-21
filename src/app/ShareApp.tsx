@@ -314,7 +314,7 @@ export function ShareApp() {
 
     return (
         <TocProvider>
-        <div className="min-h-screen bg-background relative overflow-x-hidden">
+        <div className="min-h-screen bg-background relative overflow-x-clip">
             {/* Background Animation for default Scheme */}
             {colorScheme === 'default' && (
                 <AnimatedBackground />
@@ -355,17 +355,6 @@ export function ShareApp() {
                                     </Button>
                                 </Tooltip>
 
-                                <Tooltip content={showToc ? t("ui.note.hideToc", { defaultValue: "Hide Outline" }) : t("ui.note.showToc", { defaultValue: "Show Outline" })}>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className={cn("size-9 rounded-xl transition-colors", showToc && "bg-primary/10 text-primary")}
-                                        onClick={() => setShowToc(!showToc)}
-                                    >
-                                        <List className="size-5" />
-                                    </Button>
-                                </Tooltip>
-
                                 <Tooltip content={t("ui.common.refresh")}>
                                     <Button
                                         variant="ghost"
@@ -390,6 +379,20 @@ export function ShareApp() {
                             <Tooltip content={t("ui.common.toggleTheme")}>
                                 <div><ThemeSwitcher className="rounded-xl" /></div>
                             </Tooltip>
+
+                            {/* Outline Toggle Button - Moved to the far right for desktop */}
+                            <div className="hidden sm:block">
+                                <Tooltip content={showToc ? t("ui.note.hideToc", { defaultValue: "Hide Outline" }) : t("ui.note.showToc", { defaultValue: "Show Outline" })}>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className={cn("size-9 rounded-xl transition-colors", showToc && "bg-primary/10 text-primary")}
+                                        onClick={() => setShowToc(!showToc)}
+                                    >
+                                        <List className="size-5" />
+                                    </Button>
+                                </Tooltip>
+                            </div>
 
                             {/* Mobile only "More" menu */}
                             <div className="flex sm:hidden">
@@ -459,7 +462,7 @@ export function ShareApp() {
 
                 {/* 内容区域 */}
                 <main className="flex-1 overflow-visible p-4 sm:p-6 lg:p-8">
-                    <div className={cn("mx-auto flex flex-col lg:flex-row gap-4 overflow-visible transition-all duration-300", isFullWidth ? "max-w-none" : "max-w-5xl")}>
+                    <div className={cn("mx-auto flex flex-col lg:flex-row items-start gap-4 overflow-visible transition-all duration-300", isFullWidth ? "max-w-none" : "max-w-5xl")}>
                         <div className="flex-1 min-w-0 overflow-visible rounded-2xl border bg-card shadow-sm">
                             <MarkdownEditor
                                 value={note.content}
@@ -475,7 +478,7 @@ export function ShareApp() {
                             />
                         </div>
                         {showToc && (
-                            <TableOfContents isInline={true} className="hidden lg:flex shrink-0 w-60" />
+                            <TableOfContents isInline={true} className="hidden lg:flex shrink-0 w-60 sticky top-20" />
                         )}
                     </div>
                 </main>
